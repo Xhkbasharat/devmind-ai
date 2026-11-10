@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.project import Project
+from app.models.user import User
+from app.routes.auth import get_current_user
 
 
 router = APIRouter(
@@ -71,19 +73,6 @@ class ProjectResponse(BaseModel):
     }
 
 
-def get_current_user_id() -> int:
-    """
-    Temporary development identity.
-
-    Replace this function with authenticated JWT user
-    resolution before enabling project routes publicly.
-    """
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Authentication is not configured yet.",
-    )
-
-
 def get_owned_project(
     project_id: int,
     user_id: int,
@@ -113,7 +102,7 @@ def get_owned_project(
 def create_project(
     request: ProjectCreate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
 ):
     project = Project(
         name=request.name,
@@ -124,7 +113,7 @@ def create_project(
             if request.repository_url
             else None
         ),
-        owner_id=user_id,
+        owner_id=current_user.id,
     )
 
     db.add(project)
@@ -140,11 +129,11 @@ def create_project(
 )
 def list_projects(
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
 ):
     statement = (
         select(Project)
-        .where(Project.owner_id == user_id)
+        .where(Project.owner_id == current_user.id)
         .order_by(Project.created_at.desc())
     )
 
@@ -158,11 +147,11 @@ def list_projects(
 def get_project(
     project_id: int,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
 ):
     return get_owned_project(
         project_id,
-        user_id,
+        current_user.id,
         db,
     )
 
@@ -175,11 +164,11 @@ def update_project(
     project_id: int,
     request: ProjectUpdate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
 ):
     project = get_owned_project(
         project_id,
-        user_id,
+        current_user.id,
         db,
     )
 
@@ -208,11 +197,11 @@ def update_project(
 def delete_project(
     project_id: int,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
 ):
     project = get_owned_project(
         project_id,
-        user_id,
+        current_user.id,
         db,
     )
 
@@ -220,4 +209,4 @@ def delete_project(
     db.commit()
 
     return None
-  
+    
