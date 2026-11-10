@@ -3,28 +3,32 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from app.config import settings
+
+from app.routes.auth import router as auth_router
+from app.routes.ai import router as ai_router
+from app.routes.analysis import router as analysis_router
+from app.routes.projects import router as projects_router
+from app.routes.reviews import router as reviews_router
+from app.routes.github import router as github_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Application startup
     print("DevMind AI backend starting...")
 
     yield
 
-    # Application shutdown
     print("DevMind AI backend shutting down...")
 
 
 app = FastAPI(
     title="DevMind AI",
     description=(
-        "Advanced AI Software Engineer Platform "
-        "with Machine Learning, Code Generation, "
-        "Automated Debugging, and Intelligent Code Review."
+        "Advanced AI Software Engineer Platform with "
+        "Machine Learning, Code Generation, Debugging, "
+        "Automated Code Review, and GitHub Integration."
     ),
     version="1.0.0",
     docs_url="/docs",
@@ -32,14 +36,31 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Frontend access configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=[
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+    ],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+    ],
 )
+
+
+# Register application API routers
+app.include_router(auth_router)
+app.include_router(ai_router)
+app.include_router(analysis_router)
+app.include_router(projects_router)
+app.include_router(reviews_router)
+app.include_router(github_router)
 
 
 @app.get("/", tags=["System"])
@@ -63,19 +84,18 @@ async def health_check():
 
 @app.get("/api/v1/status", tags=["System"])
 async def api_status():
-    return JSONResponse(
-        status_code=200,
-        content={
-            "success": True,
-            "message": "DevMind AI API is operational",
-            "version": "1.0.0",
-            "modules": {
-                "code_generation": "planned",
-                "debugging": "planned",
-                "code_review": "planned",
-                "machine_learning": "planned",
-                "repository_analysis": "planned",
-            },
+    return {
+        "success": True,
+        "message": "DevMind AI API is operational",
+        "version": "1.0.0",
+        "modules": {
+            "authentication": "registered",
+            "ai_engineering": "registered",
+            "static_analysis": "registered",
+            "machine_learning": "registered",
+            "project_management": "registered",
+            "code_reviews": "registered",
+            "github_integration": "registered",
         },
-    )
-  
+    }
+    
