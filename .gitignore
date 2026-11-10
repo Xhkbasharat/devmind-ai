@@ -1,0 +1,86 @@
+
+# ==========================================
+# DEVMIND AI - GIT IGNORE
+# ==========================================
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Test and coverage reports
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Machine learning artifacts
+models/*.joblib
+models/*.pkl
+models/*.pickle
+models/*.h5
+models/*.pt
+models/*.pth
+models/*.onnx
+
+# Generated analysis files
+reports/
+artifacts/
+outputs/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.bak
+*.old
+
+# Node.js (future React frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+.pnpm-store/
+
+# Build outputs
+.next/
+coverage/
