@@ -1,385 +1,184 @@
 
-import { useState } from "react";
 import {
   Activity,
-  Bot,
+  BarChart3,
+  BookOpen,
   Bug,
   Code2,
-  FolderKanban,
-  GitBranch,
+  Github,
   LayoutDashboard,
-  Menu,
-  MessageSquare,
-  Search,
-  Settings,
-  ShieldCheck,
+  LogOut,
+  SearchCode,
   Sparkles,
-  Terminal,
-  X,
-  Zap,
 } from "lucide-react";
+import {
+  Link,
+  NavLink,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
 
-type Page =
-  | "Dashboard"
-  | "AI Code Generator"
-  | "Code Debugger"
-  | "Code Explanation"
-  | "Projects"
-  | "Code Analysis"
-  | "GitHub Integration"
-  | "Settings";
+import { useAuthStore } from "./store/authStore";
+import CodeWorkspace from "./pages/CodeWorkspace";
+import DebugWorkspace from "./pages/DebugWorkspace";
+import ExplainWorkspace from "./pages/ExplainWorkspace";
+import AnalysisWorkspace from "./pages/AnalysisWorkspace";
 
-const navigation: {
-  label: Page;
-  icon: typeof LayoutDashboard;
-}[] = [
-  { label: "Dashboard", icon: LayoutDashboard },
-  { label: "AI Code Generator", icon: Bot },
-  { label: "Code Debugger", icon: Bug },
-  { label: "Code Explanation", icon: MessageSquare },
-  { label: "Projects", icon: FolderKanban },
-  { label: "Code Analysis", icon: ShieldCheck },
-  { label: "GitHub Integration", icon: GitBranch },
-  { label: "Settings", icon: Settings },
+const navigation = [
+  { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard, end: true },
+  { label: "AI Code Generator", path: "/dashboard/code", icon: Sparkles },
+  { label: "AI Debugger", path: "/dashboard/debug", icon: Bug },
+  { label: "Code Explainer", path: "/dashboard/explain", icon: BookOpen },
+  { label: "Code Analyzer", path: "/dashboard/analysis", icon: SearchCode },
 ];
 
-function App() {
-  const [activePage, setActivePage] =
-    useState<Page>("Dashboard");
+function DashboardHome() {
+  const user = useAuthStore((state) => state.user);
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const [search, setSearch] = useState("");
-
-  const renderDashboard = () => (
-    <>
-      <div className="welcome-section">
-        <div>
-          <span className="eyebrow">
-            DEVMIND INTELLIGENCE PLATFORM
-          </span>
-          <h1>Welcome to DevMind AI</h1>
-          <p>
-            Your intelligent workspace for building better software.
-          </p>
-        </div>
-
-        <div className="welcome-icon">
-          <Sparkles size={30} />
-        </div>
+  return (
+    <div className="p-6 text-white">
+      <div className="mb-8">
+        <p className="text-sm text-violet-400">Developer workspace</p>
+        <h1 className="mt-2 text-3xl font-bold">
+          Welcome{user?.username ? `, ${user.username}` : ""}!
+        </h1>
+        <p className="mt-2 text-slate-400">
+          Your AI-powered software engineering workspace is ready.
+        </p>
       </div>
 
-      <div className="stats-grid">
-        <StatCard
-          title="Total Projects"
-          value="00"
-          icon={FolderKanban}
-          detail="Your workspace"
-        />
-        <StatCard
-          title="Code Reviews"
-          value="00"
-          icon={ShieldCheck}
-          detail="Reviews completed"
-        />
-        <StatCard
-          title="AI Operations"
-          value="00"
-          icon={Zap}
-          detail="AI tasks performed"
-        />
-        <StatCard
-          title="Code Quality"
-          value="--"
-          icon={Activity}
-          detail="Awaiting analysis"
-        />
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          { label: "AI Code Generator", icon: Sparkles, path: "/dashboard/code" },
+          { label: "AI Debugger", icon: Bug, path: "/dashboard/debug" },
+          { label: "Code Explainer", icon: BookOpen, path: "/dashboard/explain" },
+          { label: "Code Analyzer", icon: SearchCode, path: "/dashboard/analysis" },
+        ].map((tool) => {
+          const Icon = tool.icon;
+
+          return (
+            <Link
+              key={tool.path}
+              to={tool.path}
+              className="rounded-xl border border-white/10 bg-[#111629] p-5 transition hover:border-violet-500/50 hover:bg-[#171d35]"
+            >
+              <Icon size={24} className="mb-4 text-violet-400" />
+              <h2 className="font-semibold">{tool.label}</h2>
+              <p className="mt-2 text-sm text-slate-400">
+                Open workspace
+              </p>
+            </Link>
+          );
+        })}
       </div>
 
-      <section className="content-grid">
-        <div className="panel quick-panel">
-          <div className="panel-heading">
-            <div>
-              <span className="eyebrow">GET STARTED</span>
-              <h2>AI Engineering Tools</h2>
-            </div>
-            <Bot size={22} />
-          </div>
-
-          <div className="tool-grid">
-            <ToolCard
-              icon={Code2}
-              title="Generate Code"
-              description="Create code with AI assistance."
-              onClick={() => setActivePage("AI Code Generator")}
-            />
-
-            <ToolCard
-              icon={Bug}
-              title="Debug Code"
-              description="Find bugs and explore solutions."
-              onClick={() => setActivePage("Code Debugger")}
-            />
-
-            <ToolCard
-              icon={MessageSquare}
-              title="Explain Code"
-              description="Understand complex code."
-              onClick={() => setActivePage("Code Explanation")}
-            />
-
-            <ToolCard
-              icon={ShieldCheck}
-              title="Analyze Code"
-              description="Inspect code quality."
-              onClick={() => setActivePage("Code Analysis")}
-            />
-          </div>
+      <div className="mt-8 rounded-xl border border-white/10 bg-[#111629] p-6">
+        <div className="flex items-center gap-3">
+          <Activity size={22} className="text-emerald-400" />
+          <h2 className="font-semibold">Platform overview</h2>
         </div>
-
-        <div className="panel activity-panel">
-          <div className="panel-heading">
-            <div>
-              <span className="eyebrow">WORKSPACE</span>
-              <h2>Platform Status</h2>
-            </div>
-            <Activity size={22} />
-          </div>
-
-          <div className="status-row">
-            <span className="status-dot" />
-            <div>
-              <strong>Frontend</strong>
-              <p>Application initialized</p>
-            </div>
-            <span className="status-label">READY</span>
-          </div>
-
-          <div className="status-row">
-            <span className="status-dot pending" />
-            <div>
-              <strong>Backend API</strong>
-              <p>Connection not verified</p>
-            </div>
-            <span className="status-label pending-text">
-              PENDING
-            </span>
-          </div>
-
-          <div className="status-row">
-            <span className="status-dot pending" />
-            <div>
-              <strong>ML Engine</strong>
-              <p>Model setup required</p>
-            </div>
-            <span className="status-label pending-text">
-              PENDING
-            </span>
-          </div>
-
-          <div className="activity-note">
-            <Sparkles size={17} />
-            <span>
-              Your AI engineering workspace is taking shape.
-            </span>
-          </div>
-        </div>
-      </section>
-    </>
+        <p className="mt-3 text-sm leading-6 text-slate-400">
+          DevMind AI combines AI-assisted coding, debugging, code explanations,
+          and static analysis in one development environment.
+        </p>
+      </div>
+    </div>
   );
+}
 
-  const renderWorkspace = () => {
-    const descriptions: Record<Page, string> = {
-      Dashboard: "Your engineering workspace overview.",
-      "AI Code Generator": "Generate code using AI assistance.",
-      "Code Debugger": "Investigate errors and find solutions.",
-      "Code Explanation": "Understand your source code.",
-      Projects: "Manage your software development projects.",
-      "Code Analysis": "Evaluate code quality and complexity.",
-      "GitHub Integration": "Explore your connected repositories.",
-      Settings: "Manage your application preferences.",
-    };
+export default function App() {
+  const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
 
-    if (activePage === "Dashboard") {
-      return renderDashboard();
-    }
-
-    return (
-      <section className="workspace-placeholder panel">
-        <div className="workspace-icon">
-          <Sparkles size={32} />
-        </div>
-        <span className="eyebrow">ENGINEERING WORKSPACE</span>
-        <h1>{activePage}</h1>
-        <p>{descriptions[activePage]}</p>
-        <div className="coming-soon">
-          <Terminal size={17} />
-          <span>Workspace interface is being developed.</span>
-        </div>
-        <button
-          className="primary-button"
-          onClick={() => setActivePage("Dashboard")}
-        >
-          Return to Dashboard
-        </button>
-      </section>
-    );
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
   };
 
   return (
-    <div className="app-shell">
-      {sidebarOpen && (
-        <button
-          className="sidebar-overlay"
-          aria-label="Close navigation"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
-        <div className="brand">
-          <div className="brand-mark">
-            <Bot size={25} />
+    <div className="min-h-screen bg-[#080b16] text-white md:flex">
+      <aside className="w-full border-b border-white/10 bg-[#0d1222] p-5 md:min-h-screen md:w-64 md:border-b-0 md:border-r">
+        <Link to="/dashboard" className="mb-7 flex items-center gap-3">
+          <div className="rounded-xl bg-violet-600 p-2">
+            <Code2 size={23} />
           </div>
-          <div>
-            <strong>DevMind AI</strong>
-            <span>ENGINEERING PLATFORM</span>
-          </div>
-          <button
-            className="mobile-close"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="Close sidebar"
-          >
-            <X size={20} />
-          </button>
-        </div>
+          <span className="text-xl font-bold">DevMind AI</span>
+        </Link>
 
-        <div className="nav-label">MAIN MENU</div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          Workspace
+        </p>
 
-        <nav className="navigation">
-          {navigation.map(({ label, icon: Icon }) => (
-            <button
-              key={label}
-              className={`nav-item ${
-                activePage === label ? "active" : ""
-              }`}
-              onClick={() => {
-                setActivePage(label);
-                setSidebarOpen(false);
-              }}
-            >
-              <Icon size={19} />
-              <span>{label}</span>
-            </button>
-          ))}
+        <nav className="flex gap-2 overflow-x-auto md:flex-col">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.end}
+                className={({ isActive }) =>
+                  `flex shrink-0 items-center gap-3 rounded-lg px-3 py-3 text-sm transition ${
+                    isActive
+                      ? "bg-violet-600/20 text-violet-300"
+                      : "text-slate-400 hover:bg-white/5 hover:text-white"
+                  }`
+                }
+              >
+                <Icon size={18} />
+                {item.label}
+              </NavLink>
+            );
+          })}
         </nav>
 
-        <div className="sidebar-bottom">
-          <div className="sidebar-badge">
-            <Sparkles size={17} />
-            <div>
-              <strong>AI Workspace</strong>
-              <span>Development edition</span>
-            </div>
+        <div className="mt-8 hidden border-t border-white/10 pt-5 md:block">
+          <p className="mb-4 text-xs text-slate-500">
+            AI-powered development
+          </p>
+          <div className="flex items-center gap-2 text-sm text-slate-400">
+            <Github size={17} />
+            GitHub integration
+          </div>
+          <div className="mt-3 flex items-center gap-2 text-sm text-slate-400">
+            <BarChart3 size={17} />
+            Code intelligence
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-5">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">
+              {user?.username || "Developer"}
+            </p>
+            <p className="text-xs text-slate-500">DevMind account</p>
           </div>
 
-          <div className="profile">
-            <div className="avatar">D</div>
-            <div>
-              <strong>Developer</strong>
-              <span>DevMind Workspace</span>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Sign out"
+            className="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+          >
+            <LogOut size={18} />
+          </button>
         </div>
       </aside>
 
-      <main className="main-area">
-        <header className="topbar">
-          <button
-            className="mobile-menu"
-            aria-label="Open navigation"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu size={22} />
-          </button>
-
-          <div className="breadcrumb">
-            <span>DevMind AI</span>
-            <span>/</span>
-            <strong>{activePage}</strong>
-          </div>
-
-          <div className="topbar-search">
-            <Search size={17} />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search workspace..."
-              aria-label="Search workspace"
-            />
-            <kbd>⌘ K</kbd>
-          </div>
-
-          <div className="topbar-avatar">D</div>
-        </header>
-
-        <div className="page-content">{renderWorkspace()}</div>
-
-        <footer className="footer">
-          <span>© 2026 DevMind AI</span>
-          <span>Intelligent Software Engineering</span>
-        </footer>
+      <main className="min-w-0 flex-1">
+        <Routes>
+          <Route index element={<DashboardHome />} />
+          <Route path="code" element={<CodeWorkspace />} />
+          <Route path="debug" element={<DebugWorkspace />} />
+          <Route path="explain" element={<ExplainWorkspace />} />
+          <Route path="analysis" element={<AnalysisWorkspace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
       </main>
     </div>
   );
 }
-
-function StatCard({
-  title,
-  value,
-  icon: Icon,
-  detail,
-}: {
-  title: string;
-  value: string;
-  icon: typeof Activity;
-  detail: string;
-}) {
-  return (
-    <div className="stat-card panel">
-      <div className="stat-top">
-        <span>{title}</span>
-        <div className="stat-icon">
-          <Icon size={19} />
-        </div>
-      </div>
-      <strong className="stat-value">{value}</strong>
-      <span className="stat-detail">{detail}</span>
-    </div>
-  );
-}
-
-function ToolCard({
-  icon: Icon,
-  title,
-  description,
-  onClick,
-}: {
-  icon: typeof Bot;
-  title: string;
-  description: string;
-  onClick: () => void;
-}) {
-  return (
-    <button className="tool-card" onClick={onClick}>
-      <div className="tool-icon">
-        <Icon size={21} />
-      </div>
-      <strong>{title}</strong>
-      <span>{description}</span>
-    </button>
-  );
-}
-
-export default App;
-            
