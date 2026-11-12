@@ -5,6 +5,7 @@ import {
   BookOpen,
   Bug,
   Code2,
+  ClipboardCheck,
   FolderGit2,
   Github,
   LayoutDashboard,
@@ -28,6 +29,7 @@ import ExplainWorkspace from "./pages/ExplainWorkspace";
 import AnalysisWorkspace from "./pages/AnalysisWorkspace";
 import GitHubWorkspace from "./pages/GitHubWorkspace";
 import ProjectsWorkspace from "./pages/ProjectsWorkspace";
+import ReviewsWorkspace from "./pages/ReviewsWorkspace";
 
 const navigation = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard, end: true },
@@ -37,6 +39,7 @@ const navigation = [
   { label: "Code Analyzer", path: "/dashboard/analysis", icon: SearchCode },
   { label: "GitHub Workspace", path: "/dashboard/github", icon: Github },
   { label: "My Projects", path: "/dashboard/projects", icon: FolderGit2 },
+  { label: "Code Reviews", path: "/dashboard/reviews", icon: ClipboardCheck },
 ];
 
 function DashboardHome() {
@@ -49,6 +52,7 @@ function DashboardHome() {
     { label: "Code Analyzer", icon: SearchCode, path: "/dashboard/analysis" },
     { label: "GitHub Workspace", icon: Github, path: "/dashboard/github" },
     { label: "My Projects", icon: FolderGit2, path: "/dashboard/projects" },
+    { label: "Code Reviews", icon: ClipboardCheck, path: "/dashboard/reviews" },
   ];
 
   return (
@@ -90,7 +94,7 @@ function DashboardHome() {
         </div>
         <p className="mt-3 text-sm leading-6 text-slate-400">
           DevMind AI combines AI-assisted coding, debugging, code explanations,
-          static analysis, GitHub insights, and project management.
+          static analysis, GitHub insights, project management, and code reviews.
         </p>
       </div>
     </div>
@@ -187,9 +191,10 @@ export default function App() {
           <Route path="analysis" element={<AnalysisWorkspace />} />
           <Route path="github" element={<GitHubWorkspace />} />
           <Route path="projects" element={<ProjectsWorkspace />} />
+          <Route path="reviews" element={<ReviewsWorkspace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
     </div>
   );
-}
+            }
