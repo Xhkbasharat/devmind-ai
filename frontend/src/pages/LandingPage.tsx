@@ -1,3 +1,4 @@
+
 import {
   ArrowRight,
   BrainCircuit,
@@ -9,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const features = [
   {
@@ -38,6 +40,8 @@ const features = [
 ];
 
 export default function LandingPage() {
+  useDocumentTitle("Home");
+
   return (
     <main className="min-h-screen bg-[#080b16] text-white">
       <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
@@ -147,6 +151,7 @@ export default function LandingPage() {
             <p className="pl-6 text-slate-300">
               explain_code()
             </p>
+
             <div className="mt-6 rounded-xl border border-violet-500/20 bg-violet-500/10 p-4">
               <div className="mb-2 flex items-center gap-2 text-violet-300">
                 <Sparkles size={16} />
@@ -202,4 +207,4 @@ export default function LandingPage() {
       </footer>
     </main>
   );
-            }
+}
