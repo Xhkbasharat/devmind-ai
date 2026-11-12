@@ -23,6 +23,7 @@ import {
 } from "react-router-dom";
 
 import { useAuthStore } from "./store/authStore";
+import BackendStatus from "./components/BackendStatus";
 import CodeWorkspace from "./pages/CodeWorkspace";
 import DebugWorkspace from "./pages/DebugWorkspace";
 import ExplainWorkspace from "./pages/ExplainWorkspace";
@@ -57,14 +58,18 @@ function DashboardHome() {
 
   return (
     <div className="p-6 text-white">
-      <div className="mb-8">
-        <p className="text-sm text-violet-400">Developer workspace</p>
-        <h1 className="mt-2 text-3xl font-bold">
-          Welcome{user?.username ? `, ${user.username}` : ""}!
-        </h1>
-        <p className="mt-2 text-slate-400">
-          Your AI-powered software engineering workspace is ready.
-        </p>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-sm text-violet-400">Developer workspace</p>
+          <h1 className="mt-2 text-3xl font-bold">
+            Welcome{user?.username ? `, ${user.username}` : ""}!
+          </h1>
+          <p className="mt-2 text-slate-400">
+            Your AI-powered software engineering workspace is ready.
+          </p>
+        </div>
+
+        <BackendStatus />
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -197,4 +202,4 @@ export default function App() {
       </main>
     </div>
   );
-            }
+                  }
