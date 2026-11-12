@@ -25,6 +25,7 @@ import CodeWorkspace from "./pages/CodeWorkspace";
 import DebugWorkspace from "./pages/DebugWorkspace";
 import ExplainWorkspace from "./pages/ExplainWorkspace";
 import AnalysisWorkspace from "./pages/AnalysisWorkspace";
+import GitHubWorkspace from "./pages/GitHubWorkspace";
 
 const navigation = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard, end: true },
@@ -32,6 +33,7 @@ const navigation = [
   { label: "AI Debugger", path: "/dashboard/debug", icon: Bug },
   { label: "Code Explainer", path: "/dashboard/explain", icon: BookOpen },
   { label: "Code Analyzer", path: "/dashboard/analysis", icon: SearchCode },
+  { label: "GitHub Workspace", path: "/dashboard/github", icon: Github },
 ];
 
 function DashboardHome() {
@@ -55,6 +57,7 @@ function DashboardHome() {
           { label: "AI Debugger", icon: Bug, path: "/dashboard/debug" },
           { label: "Code Explainer", icon: BookOpen, path: "/dashboard/explain" },
           { label: "Code Analyzer", icon: SearchCode, path: "/dashboard/analysis" },
+          { label: "GitHub Workspace", icon: Github, path: "/dashboard/github" },
         ].map((tool) => {
           const Icon = tool.icon;
 
@@ -81,7 +84,7 @@ function DashboardHome() {
         </div>
         <p className="mt-3 text-sm leading-6 text-slate-400">
           DevMind AI combines AI-assisted coding, debugging, code explanations,
-          and static analysis in one development environment.
+          static analysis, and GitHub repository insights in one development environment.
         </p>
       </div>
     </div>
@@ -176,6 +179,7 @@ export default function App() {
           <Route path="debug" element={<DebugWorkspace />} />
           <Route path="explain" element={<ExplainWorkspace />} />
           <Route path="analysis" element={<AnalysisWorkspace />} />
+          <Route path="github" element={<GitHubWorkspace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
