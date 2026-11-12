@@ -5,6 +5,7 @@ import {
   BookOpen,
   Bug,
   Code2,
+  FolderGit2,
   Github,
   LayoutDashboard,
   LogOut,
@@ -26,6 +27,7 @@ import DebugWorkspace from "./pages/DebugWorkspace";
 import ExplainWorkspace from "./pages/ExplainWorkspace";
 import AnalysisWorkspace from "./pages/AnalysisWorkspace";
 import GitHubWorkspace from "./pages/GitHubWorkspace";
+import ProjectsWorkspace from "./pages/ProjectsWorkspace";
 
 const navigation = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard, end: true },
@@ -34,10 +36,20 @@ const navigation = [
   { label: "Code Explainer", path: "/dashboard/explain", icon: BookOpen },
   { label: "Code Analyzer", path: "/dashboard/analysis", icon: SearchCode },
   { label: "GitHub Workspace", path: "/dashboard/github", icon: Github },
+  { label: "My Projects", path: "/dashboard/projects", icon: FolderGit2 },
 ];
 
 function DashboardHome() {
   const user = useAuthStore((state) => state.user);
+
+  const tools = [
+    { label: "AI Code Generator", icon: Sparkles, path: "/dashboard/code" },
+    { label: "AI Debugger", icon: Bug, path: "/dashboard/debug" },
+    { label: "Code Explainer", icon: BookOpen, path: "/dashboard/explain" },
+    { label: "Code Analyzer", icon: SearchCode, path: "/dashboard/analysis" },
+    { label: "GitHub Workspace", icon: Github, path: "/dashboard/github" },
+    { label: "My Projects", icon: FolderGit2, path: "/dashboard/projects" },
+  ];
 
   return (
     <div className="p-6 text-white">
@@ -51,14 +63,8 @@ function DashboardHome() {
         </p>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          { label: "AI Code Generator", icon: Sparkles, path: "/dashboard/code" },
-          { label: "AI Debugger", icon: Bug, path: "/dashboard/debug" },
-          { label: "Code Explainer", icon: BookOpen, path: "/dashboard/explain" },
-          { label: "Code Analyzer", icon: SearchCode, path: "/dashboard/analysis" },
-          { label: "GitHub Workspace", icon: Github, path: "/dashboard/github" },
-        ].map((tool) => {
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        {tools.map((tool) => {
           const Icon = tool.icon;
 
           return (
@@ -84,7 +90,7 @@ function DashboardHome() {
         </div>
         <p className="mt-3 text-sm leading-6 text-slate-400">
           DevMind AI combines AI-assisted coding, debugging, code explanations,
-          static analysis, and GitHub repository insights in one development environment.
+          static analysis, GitHub insights, and project management.
         </p>
       </div>
     </div>
@@ -180,6 +186,7 @@ export default function App() {
           <Route path="explain" element={<ExplainWorkspace />} />
           <Route path="analysis" element={<AnalysisWorkspace />} />
           <Route path="github" element={<GitHubWorkspace />} />
+          <Route path="projects" element={<ProjectsWorkspace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
