@@ -11,17 +11,20 @@ interface AuthState {
   logout: () => void;
 }
 
+const hasToken = Boolean(
+  localStorage.getItem("devmind_access_token")
+);
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  isAuthenticated: Boolean(
-    localStorage.getItem("devmind_access_token")
-  ),
-  isLoading: false,
+  isAuthenticated: hasToken,
+  isLoading: hasToken,
 
   setUser: (user) =>
     set({
       user,
       isAuthenticated: Boolean(user),
+      isLoading: false,
     }),
 
   loadUser: async () => {
@@ -36,7 +39,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       return;
     }
 
-    set({ isLoading: true });
+    set({
+      isAuthenticated: true,
+      isLoading: true,
+    });
 
     try {
       const user = await authService.getCurrentUser();
