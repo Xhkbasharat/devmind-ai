@@ -2,6 +2,7 @@
 import React, { StrictMode, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import AppRoutes from "./AppRoutes";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { useAuthStore } from "./store/authStore";
 import "./styles/index.css";
 
@@ -17,6 +18,8 @@ function Application() {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Application />
+    <ErrorBoundary>
+      <Application />
+    </ErrorBoundary>
   </StrictMode>
 );
