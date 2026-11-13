@@ -1,33 +1,29 @@
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import LandingPage from "./pages/LandingPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import NotFoundPage from "./pages/NotFoundPage";
-import ProtectedRoute from "./components/ProtectedRoute";
-import ScrollToTop from "./components/ScrollToTop";
-import App from "./App";
+import { useLocation } from "react-router-dom";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
-function AppRoutes() {
-  return (
-    <BrowserRouter>
-      <ScrollToTop />
+const pageTitles: Record<string, string> = {
+  "/": "Home",
+  "/login": "Login",
+  "/register": "Create Account",
+  "/dashboard": "Dashboard",
+  "/dashboard/code": "AI Code Generator",
+  "/dashboard/debug": "AI Debugger",
+  "/dashboard/explain": "Code Explainer",
+  "/dashboard/analysis": "Code Analyzer",
+  "/dashboard/github": "GitHub Workspace",
+  "/dashboard/projects": "My Projects",
+  "/dashboard/reviews": "Code Reviews",
+};
 
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
+export default function PageTitleManager() {
+  const { pathname } = useLocation();
 
-        <Route path="/login" element={<LoginPage />} />
+  const title =
+    pageTitles[pathname.replace(/\/$/, "")] ||
+    (pathname.startsWith("/dashboard") ? "Developer Workspace" : "Page Not Found");
 
-        <Route path="/register" element={<RegisterPage />} />
+  useDocumentTitle(title);
 
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard/*" element={<App />} />
-        </Route>
-
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </BrowserRouter>
-  );
+  return null;
 }
-
-export default AppRoutes;
