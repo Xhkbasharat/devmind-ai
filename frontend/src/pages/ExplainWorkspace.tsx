@@ -1,42 +1,38 @@
 
 import { useState, type FormEvent } from "react";
-import {
-  BookOpen,
-  Copy,
-  Loader2,
-  Sparkles,
-  Lightbulb,
-} from "lucide-react";
-import aiService from "../services/ai";
+import { BookOpen, Sparkles } from "lucide-react";
 
-const languages = [
-  "Python",
-  "JavaScript",
-  "TypeScript",
-  "Java",
-  "C++",
-  "Go",
-  "Rust",
-];
+import CodeEditor from "../components/CodeEditor";
+import CodeOutput from "../components/CodeOutput";
+import PageHeader from "../components/PageHeader";
+import AlertMessage from "../components/AlertMessage";
+import LoadingSpinner from "../components/LoadingSpinner";
+
+import aiService from "../services/ai";
+import { getErrorMessage } from "../services/error";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export default function ExplainWorkspace() {
-  const [language, setLanguage] = useState("Python");
+  useDocumentTitle("Code Explainer");
+
+  const [language, setLanguage] = useState("python");
   const [code, setCode] = useState("");
-  const [result, setResult] = useState("");
+  const [explanation, setExplanation] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isExplaining, setIsExplaining] = useState(false);
 
   const handleExplain = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    setError("");
+    setExplanation("");
+
     if (!code.trim()) {
-      setError("Please enter code to explain.");
+      setError("Please enter the code you want explained.");
       return;
     }
 
-    setError("");
-    setResult("");
-    setIsExplaining(true);
+    setIsLoading(true);
 
     try {
       const response = await aiService.explainCode({
@@ -44,128 +40,72 @@ export default function ExplainWorkspace() {
         language,
       });
 
-      setResult(response.result);
-    } catch {
-      setError("Code explanation failed. Check your backend connection and AI configuration.");
+      setExplanation(response.result);
+    } catch (err) {
+      setError(
+        getErrorMessage(err, "Code explanation failed. Please try again.")
+      );
     } finally {
-      setIsExplaining(false);
-    }
-  };
-
-  const copyResult = async () => {
-    if (!result) return;
-
-    try {
-      await navigator.clipboard.writeText(result);
-    } catch {
-      setError("Unable to copy the explanation.");
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#080b16] p-6 text-white">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-8">
-          <div className="mb-3 flex items-center gap-2 text-amber-400">
-            <BookOpen size={20} />
-            <span className="text-sm font-medium">AI Learning Tool</span>
-          </div>
+    <div className="space-y-8">
+      <PageHeader
+        title="AI Code Explainer"
+        description="Understand complex code through clear, structured AI-generated explanations."
+      />
 
-          <h1 className="text-3xl font-bold">AI Code Explainer</h1>
-          <p className="mt-2 text-slate-400">
-            Understand complex code with clear, structured AI explanations.
-          </p>
-        </div>
+      {error && (
+        <AlertMessage
+          type="error"
+          title="Explanation failed"
+          message={error}
+          onClose={() => setError("")}
+        />
+      )}
 
-        <form
-          onSubmit={handleExplain}
-          className="rounded-2xl border border-white/10 bg-[#111629] p-6"
+      <form onSubmit={handleExplain} className="space-y-6">
+        <CodeEditor
+          code={code}
+          language={language}
+          onChange={setCode}
+          onLanguageChange={setLanguage}
+          placeholder="Paste the code you want DevMind AI to explain..."
+          minHeight={350}
+        />
+
+        <button
+          type="submit"
+          disabled={isLoading || !code.trim()}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-6 py-3.5 font-semibold text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
-          <label
-            htmlFor="language"
-            className="mb-2 block text-sm font-medium text-slate-300"
-          >
-            Programming language
-          </label>
+          <BookOpen size={19} />
+          {isLoading ? "Explaining code..." : "Explain my code"}
+        </button>
+      </form>
 
-          <select
-            id="language"
-            value={language}
-            onChange={(event) => setLanguage(event.target.value)}
-            className="mb-6 w-full rounded-lg border border-white/10 bg-[#080b16] px-4 py-3 text-sm outline-none focus:border-violet-500 sm:max-w-xs"
-          >
-            {languages.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
+      {isLoading && (
+        <LoadingSpinner message="DevMind AI is analyzing the code and preparing an explanation..." />
+      )}
 
-          <label
-            htmlFor="code"
-            className="mb-2 block text-sm font-medium text-slate-300"
-          >
-            Paste your code
-          </label>
-
-          <textarea
-            id="code"
-            value={code}
-            onChange={(event) => setCode(event.target.value)}
-            placeholder="Paste the code you want DevMind AI to explain..."
-            rows={12}
-            spellCheck={false}
-            className="w-full resize-y rounded-lg border border-white/10 bg-[#080b16] p-4 font-mono text-sm leading-6 text-emerald-300 outline-none placeholder:text-slate-600 focus:border-violet-500"
-          />
-
-          {error && (
-            <p role="alert" className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={isExplaining}
-            className="mt-5 flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-3 text-sm font-semibold transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isExplaining ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                Explaining...
-              </>
-            ) : (
-              <>
-                <Sparkles size={18} />
-                Explain my code
-              </>
-            )}
-          </button>
-        </form>
-
-        <section className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-[#111629]">
-          <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-            <div className="flex items-center gap-2">
-              <Lightbulb size={18} className="text-amber-400" />
-              <h2 className="font-semibold">Code explanation</h2>
-            </div>
-
-            <button
-              type="button"
-              onClick={copyResult}
-              disabled={!result}
-              className="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm text-slate-300 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <Copy size={15} />
-              Copy
-            </button>
+      {!isLoading && explanation && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 text-violet-400">
+            <Sparkles size={20} />
+            <h2 className="font-semibold text-white">
+              Code Explanation
+            </h2>
           </div>
 
-          <pre className="min-h-64 overflow-x-auto whitespace-pre-wrap p-5 text-sm leading-6 text-slate-300">
-            {result || "// Your code explanation will appear here."}
-          </pre>
+          <CodeOutput
+            code={explanation}
+            language="text"
+            title="AI Generated Explanation"
+          />
         </section>
-      </div>
+      )}
     </div>
   );
-          }
+}
