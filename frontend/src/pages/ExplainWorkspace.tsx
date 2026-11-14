@@ -1,111 +1,122 @@
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { BookOpen, Sparkles } from "lucide-react";
-
-import CodeEditor from "../components/CodeEditor";
-import CodeOutput from "../components/CodeOutput";
 import PageHeader from "../components/PageHeader";
 import AlertMessage from "../components/AlertMessage";
 import LoadingSpinner from "../components/LoadingSpinner";
-
+import CodeEditor from "../components/CodeEditor";
+import CodeOutput from "../components/CodeOutput";
+import CodeFileUpload from "../components/CodeFileUpload";
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 export default function ExplainWorkspace() {
   useDocumentTitle("Code Explainer");
 
-  const [language, setLanguage] = useState("python");
   const [code, setCode] = useState("");
+  const [language, setLanguage] = useState("python");
   const [explanation, setExplanation] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleExplain = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    setError("");
+  const handleFileRead = (
+    fileCode: string,
+    fileLanguage: string
+  ) => {
+    setCode(fileCode);
+    setLanguage(fileLanguage);
     setExplanation("");
+    setError("");
+  };
 
+  const handleExplain = async () => {
     if (!code.trim()) {
-      setError("Please enter the code you want explained.");
+      setError("Please enter or upload code to explain.");
       return;
     }
 
     setIsLoading(true);
+    setError("");
+    setExplanation("");
 
     try {
       const response = await aiService.explainCode({
-        code: code.trim(),
+        code,
         language,
       });
 
       setExplanation(response.result);
     } catch (err) {
-      setError(
-        getErrorMessage(err, "Code explanation failed. Please try again.")
-      );
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="workspace-page">
       <PageHeader
         title="AI Code Explainer"
-        description="Understand complex code through clear, structured AI-generated explanations."
+        description="Understand code structure, logic, and functionality with AI-powered explanations."
+        icon={<BookOpen size={24} />}
       />
+
+      <CodeFileUpload onFileRead={handleFileRead} />
 
       {error && (
         <AlertMessage
           type="error"
-          title="Explanation failed"
           message={error}
           onClose={() => setError("")}
         />
       )}
 
-      <form onSubmit={handleExplain} className="space-y-6">
-        <CodeEditor
-          code={code}
-          language={language}
-          onChange={setCode}
-          onLanguageChange={setLanguage}
-          placeholder="Paste the code you want DevMind AI to explain..."
-          minHeight={350}
-        />
-
-        <button
-          type="submit"
-          disabled={isLoading || !code.trim()}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-6 py-3.5 font-semibold text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-        >
-          <BookOpen size={19} />
-          {isLoading ? "Explaining code..." : "Explain my code"}
-        </button>
-      </form>
-
-      {isLoading && (
-        <LoadingSpinner message="DevMind AI is analyzing the code and preparing an explanation..." />
-      )}
-
-      {!isLoading && explanation && (
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 text-violet-400">
-            <Sparkles size={20} />
-            <h2 className="font-semibold text-white">
-              Code Explanation
-            </h2>
-          </div>
-
-          <CodeOutput
-            code={explanation}
-            language="text"
-            title="AI Generated Explanation"
+      <div className="workspace-grid">
+        <section className="workspace-panel">
+          <CodeEditor
+            value={code}
+            onChange={setCode}
+            language={language}
+            onLanguageChange={setLanguage}
+            label="Code to explain"
           />
+
+          <button
+            type="button"
+            className="btn btn-primary workspace-action"
+            onClick={handleExplain}
+            disabled={isLoading || !code.trim()}
+          >
+            {isLoading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <Sparkles size={18} />
+            )}
+            {isLoading ? "Explaining..." : "Explain Code"}
+          </button>
         </section>
-      )}
+
+        <section className="workspace-panel">
+          {explanation ? (
+            <CodeOutput
+              code={explanation}
+              language="text"
+              title="Code Explanation"
+              filename="code-explanation"
+            />
+          ) : (
+            <div className="workspace-placeholder">
+              <BookOpen size={32} />
+              <h3>Your explanation will appear here</h3>
+              <p>
+                Enter or upload code, then request an explanation
+                to understand how it works.
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
