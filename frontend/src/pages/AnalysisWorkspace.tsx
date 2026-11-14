@@ -9,6 +9,8 @@ import CodeFileUpload from "../components/CodeFileUpload";
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { calculateCodeMetrics } from "../utils/codeMetrics";
+import { analyzeComplexity } from "../utils/complexity";
 
 interface AnalysisIssue {
   severity: string;
@@ -32,6 +34,9 @@ export default function AnalysisWorkspace() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const metrics = calculateCodeMetrics(code, language);
+  const complexity = analyzeComplexity(code, language);
 
   const handleFileRead = (
     fileCode: string,
@@ -115,9 +120,52 @@ export default function AnalysisWorkspace() {
         </section>
 
         <section className="workspace-panel">
+          {code.trim() && (
+            <div className="analysis-metrics">
+              <h3>Code Metrics</h3>
+
+              <div className="analysis-metric-grid">
+                <div className="analysis-metric">
+                  <strong>{metrics.totalLines}</strong>
+                  <span>Total Lines</span>
+                </div>
+
+                <div className="analysis-metric">
+                  <strong>{metrics.nonEmptyLines}</strong>
+                  <span>Non-empty Lines</span>
+                </div>
+
+                <div className="analysis-metric">
+                  <strong>{metrics.commentLines}</strong>
+                  <span>Comment Lines</span>
+                </div>
+
+                <div className="analysis-metric">
+                  <strong>{metrics.words}</strong>
+                  <span>Words</span>
+                </div>
+              </div>
+
+              <h3>Complexity Estimate</h3>
+
+              <div className="analysis-complexity">
+                <strong>
+                  {complexity.level} ({complexity.score}/100)
+                </strong>
+                <p>{complexity.explanation}</p>
+                <p>
+                  Functions: {complexity.functionCount} ·
+                  Conditionals: {complexity.conditionalCount} ·
+                  Loops: {complexity.loopCount} ·
+                  Nesting depth: {complexity.nestingDepth}
+                </p>
+              </div>
+            </div>
+          )}
+
           {result ? (
             <div className="analysis-results">
-              <h3>Analysis Results</h3>
+              <h3>AI Analysis Results</h3>
 
               <div className="analysis-score">
                 <span className="analysis-score-value">
@@ -142,9 +190,11 @@ export default function AnalysisWorkspace() {
                       <strong>
                         {issue.severity}: {issue.message}
                       </strong>
+
                       {issue.description && (
                         <p>{issue.description}</p>
                       )}
+
                       {issue.line !== undefined && (
                         <span>Line {issue.line}</span>
                       )}
@@ -156,10 +206,10 @@ export default function AnalysisWorkspace() {
           ) : (
             <div className="workspace-placeholder">
               <BarChart3 size={32} />
-              <h3>Your analysis will appear here</h3>
+              <h3>Your AI analysis will appear here</h3>
               <p>
                 Enter or upload code, then run the analyzer to
-                inspect its quality and potential issues.
+                receive an AI quality review.
               </p>
             </div>
           )}
