@@ -1,42 +1,38 @@
 
 import { useState, type FormEvent } from "react";
-import {
-  Code2,
-  Copy,
-  Loader2,
-  Sparkles,
-  WandSparkles,
-} from "lucide-react";
-import aiService from "../services/ai";
+import { Sparkles, WandSparkles } from "lucide-react";
 
-const languages = [
-  "Python",
-  "JavaScript",
-  "TypeScript",
-  "Java",
-  "C++",
-  "Go",
-  "Rust",
-];
+import CodeEditor from "../components/CodeEditor";
+import CodeOutput from "../components/CodeOutput";
+import PageHeader from "../components/PageHeader";
+import AlertMessage from "../components/AlertMessage";
+import LoadingSpinner from "../components/LoadingSpinner";
+
+import aiService from "../services/ai";
+import { getErrorMessage } from "../services/error";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export default function CodeWorkspace() {
-  const [language, setLanguage] = useState("Python");
+  useDocumentTitle("AI Code Generator");
+
+  const [language, setLanguage] = useState("python");
   const [instructions, setInstructions] = useState("");
-  const [result, setResult] = useState("");
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    setError("");
+    setGeneratedCode("");
 
     if (!instructions.trim()) {
       setError("Please describe the code you want to generate.");
       return;
     }
 
-    setError("");
-    setResult("");
-    setIsGenerating(true);
+    setIsLoading(true);
 
     try {
       const response = await aiService.generateCode({
@@ -45,123 +41,96 @@ export default function CodeWorkspace() {
         instructions: instructions.trim(),
       });
 
-      setResult(response.result);
-    } catch {
-      setError("Code generation failed. Check your backend connection and AI configuration.");
+      setGeneratedCode(response.result);
+    } catch (err) {
+      setError(
+        getErrorMessage(err, "Code generation failed. Please try again.")
+      );
     } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const copyResult = async () => {
-    if (!result) return;
-
-    try {
-      await navigator.clipboard.writeText(result);
-    } catch {
-      setError("Unable to copy the generated code.");
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#080b16] p-6 text-white">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-8">
-          <div className="mb-3 flex items-center gap-2 text-violet-400">
-            <Sparkles size={20} />
-            <span className="text-sm font-medium">AI Development Tool</span>
-          </div>
+    <div className="space-y-8">
+      <PageHeader
+        title="AI Code Generator"
+        description="Transform your instructions into code using AI assistance."
+      />
 
-          <h1 className="text-3xl font-bold">AI Code Generator</h1>
-          <p className="mt-2 text-slate-400">
-            Describe what you want to build and let DevMind AI generate the code.
-          </p>
-        </div>
+      {error && (
+        <AlertMessage
+          type="error"
+          title="Generation failed"
+          message={error}
+          onClose={() => setError("")}
+        />
+      )}
 
-        <form
-          onSubmit={handleGenerate}
-          className="rounded-2xl border border-white/10 bg-[#111629] p-6"
-        >
-          <label className="mb-2 block text-sm font-medium text-slate-300">
-            Programming language
-          </label>
-
-          <select
-            value={language}
-            onChange={(event) => setLanguage(event.target.value)}
-            className="mb-6 w-full rounded-lg border border-white/10 bg-[#080b16] px-4 py-3 text-sm text-white outline-none focus:border-violet-500 sm:max-w-xs"
-          >
-            {languages.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-
-          <label
-            htmlFor="instructions"
-            className="mb-2 block text-sm font-medium text-slate-300"
-          >
-            Describe your code
-          </label>
-
-          <textarea
-            id="instructions"
-            value={instructions}
-            onChange={(event) => setInstructions(event.target.value)}
-            placeholder="Example: Create a Python REST API with user registration, login, and JWT authentication..."
-            rows={7}
-            className="w-full resize-y rounded-lg border border-white/10 bg-[#080b16] p-4 text-sm leading-6 text-white outline-none placeholder:text-slate-600 focus:border-violet-500"
-          />
-
-          {error && (
-            <p role="alert" className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={isGenerating}
-            className="mt-5 flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-3 text-sm font-semibold transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <WandSparkles size={18} />
-                Generate code
-              </>
-            )}
-          </button>
-        </form>
-
-        <section className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-[#111629]">
-          <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-            <div className="flex items-center gap-2">
-              <Code2 size={18} className="text-violet-400" />
-              <h2 className="font-semibold">Generated output</h2>
+      <form onSubmit={handleGenerate} className="space-y-6">
+        <section className="rounded-2xl border border-slate-800 bg-[#101626] p-5 sm:p-6">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="rounded-xl bg-violet-500/10 p-3 text-violet-400">
+              <WandSparkles size={23} />
             </div>
 
-            <button
-              type="button"
-              onClick={copyResult}
-              disabled={!result}
-              className="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm text-slate-300 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <Copy size={15} />
-              Copy
-            </button>
+            <div>
+              <h2 className="font-semibold text-white">
+                Describe your idea
+              </h2>
+              <p className="mt-1 text-sm text-slate-400">
+                Explain what you want the AI to build.
+              </p>
+            </div>
           </div>
 
-          <pre className="min-h-64 overflow-x-auto whitespace-pre-wrap p-5 text-sm leading-6 text-emerald-300">
-            {result || "// Your generated code will appear here."}
-          </pre>
+          <textarea
+            value={instructions}
+            onChange={(event) => setInstructions(event.target.value)}
+            placeholder="Example: Create a Python function that sorts a list using merge sort and explains its time complexity."
+            rows={5}
+            maxLength={10000}
+            className="w-full resize-y rounded-xl border border-slate-700 bg-[#080b16] p-4 text-sm leading-7 text-white outline-none transition placeholder:text-slate-600 focus:border-violet-500"
+          />
+
+          <div className="mt-2 text-right text-xs text-slate-500">
+            {instructions.length.toLocaleString()} / 10,000 characters
+          </div>
         </section>
-      </div>
+
+        <section className="space-y-4">
+          <CodeEditor
+            code=""
+            language={language}
+            onChange={() => undefined}
+            onLanguageChange={setLanguage}
+            readOnly
+            placeholder="Select a programming language above. Your generated code will appear below."
+            minHeight={100}
+          />
+        </section>
+
+        <button
+          type="submit"
+          disabled={isLoading || !instructions.trim()}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-6 py-3.5 font-semibold text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+        >
+          <Sparkles size={19} />
+          {isLoading ? "Generating code..." : "Generate code"}
+        </button>
+      </form>
+
+      {isLoading && (
+        <LoadingSpinner message="DevMind AI is generating your code..." />
+      )}
+
+      {!isLoading && generatedCode && (
+        <CodeOutput
+          code={generatedCode}
+          language={language}
+          title="AI Generated Code"
+        />
+      )}
     </div>
   );
-                }
+}
