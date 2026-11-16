@@ -10,6 +10,7 @@ import CodeFileUpload from "../components/CodeFileUpload";
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { validateCodeInput } from "../utils/codeValidation";
 
 export default function DebugWorkspace() {
   useDocumentTitle("AI Debugger");
@@ -20,9 +21,21 @@ export default function DebugWorkspace() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const handleFileRead = (
+    fileCode: string,
+    fileLanguage: string
+  ) => {
+    setCode(fileCode);
+    setLanguage(fileLanguage);
+    setDebugResult("");
+    setError("");
+  };
+
   const handleDebug = async () => {
-    if (!code.trim()) {
-      setError("Please enter or upload code to debug.");
+    const validation = validateCodeInput(code);
+
+    if (!validation.valid) {
+      setError(validation.error ?? "Invalid code input.");
       return;
     }
 
@@ -42,16 +55,6 @@ export default function DebugWorkspace() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleFileRead = (
-    fileCode: string,
-    fileLanguage: string
-  ) => {
-    setCode(fileCode);
-    setLanguage(fileLanguage);
-    setDebugResult("");
-    setError("");
   };
 
   return (
