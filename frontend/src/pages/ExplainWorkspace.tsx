@@ -10,6 +10,7 @@ import CodeFileUpload from "../components/CodeFileUpload";
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { validateCodeInput } from "../utils/codeValidation";
 
 export default function ExplainWorkspace() {
   useDocumentTitle("Code Explainer");
@@ -31,8 +32,10 @@ export default function ExplainWorkspace() {
   };
 
   const handleExplain = async () => {
-    if (!code.trim()) {
-      setError("Please enter or upload code to explain.");
+    const validation = validateCodeInput(code);
+
+    if (!validation.valid) {
+      setError(validation.error ?? "Invalid code input.");
       return;
     }
 
