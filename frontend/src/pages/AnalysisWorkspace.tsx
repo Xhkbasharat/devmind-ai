@@ -11,6 +11,7 @@ import { getErrorMessage } from "../services/error";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { calculateCodeMetrics } from "../utils/codeMetrics";
 import { analyzeComplexity } from "../utils/complexity";
+import { validateCodeInput } from "../utils/codeValidation";
 
 interface AnalysisIssue {
   severity: string;
@@ -49,8 +50,10 @@ export default function AnalysisWorkspace() {
   };
 
   const handleAnalyze = async () => {
-    if (!code.trim()) {
-      setError("Please enter or upload code to analyze.");
+    const validation = validateCodeInput(code);
+
+    if (!validation.valid) {
+      setError(validation.error ?? "Invalid code input.");
       return;
     }
 
@@ -129,17 +132,14 @@ export default function AnalysisWorkspace() {
                   <strong>{metrics.totalLines}</strong>
                   <span>Total Lines</span>
                 </div>
-
                 <div className="analysis-metric">
                   <strong>{metrics.nonEmptyLines}</strong>
                   <span>Non-empty Lines</span>
                 </div>
-
                 <div className="analysis-metric">
                   <strong>{metrics.commentLines}</strong>
                   <span>Comment Lines</span>
                 </div>
-
                 <div className="analysis-metric">
                   <strong>{metrics.words}</strong>
                   <span>Words</span>
