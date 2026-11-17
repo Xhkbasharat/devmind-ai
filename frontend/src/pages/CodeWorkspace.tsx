@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Code2, Sparkles } from "lucide-react";
+import { Code2, Sparkles, WandSparkles } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import AlertMessage from "../components/AlertMessage";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -10,15 +10,32 @@ import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { validatePrompt } from "../utils/promptValidation";
+import { promptTemplates } from "../utils/promptTemplates";
 
 export default function CodeWorkspace() {
   useDocumentTitle("AI Code Generator");
 
   const [language, setLanguage] = useState("python");
   const [instructions, setInstructions] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState("");
   const [generatedCode, setGeneratedCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplate(templateId);
+
+    const template = promptTemplates.find(
+      (item) => item.id === templateId
+    );
+
+    if (template) {
+      setLanguage(template.language);
+      setInstructions(template.prompt);
+      setGeneratedCode("");
+      setError("");
+    }
+  };
 
   const handleGenerate = async () => {
     const validation = validatePrompt(instructions);
@@ -51,7 +68,7 @@ export default function CodeWorkspace() {
     <div className="workspace-page">
       <PageHeader
         title="AI Code Generator"
-        description="Describe what you want to build and generate code with AI."
+        description="Describe what you want to build or start with a ready-made template."
         icon={<Code2 size={24} />}
       />
 
@@ -65,11 +82,47 @@ export default function CodeWorkspace() {
 
       <div className="workspace-grid">
         <section className="workspace-panel">
+          <div className="form-group">
+            <label htmlFor="prompt-template">
+              <WandSparkles size={16} /> Choose a prompt template
+            </label>
+
+            <select
+              id="prompt-template"
+              className="form-select"
+              value={selectedTemplate}
+              onChange={(event) =>
+                handleTemplateChange(event.target.value)
+              }
+            >
+              <option value="">Write my own instructions</option>
+
+              {promptTemplates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.title}
+                </option>
+              ))}
+            </select>
+
+            {selectedTemplate && (
+              <small>
+                {
+                  promptTemplates.find(
+                    (item) => item.id === selectedTemplate
+                  )?.description
+                }
+              </small>
+            )}
+          </div>
+
           <CodeEditor
             value=""
             onChange={() => undefined}
             language={language}
-            onLanguageChange={setLanguage}
+            onLanguageChange={(value) => {
+              setLanguage(value);
+              setGeneratedCode("");
+            }}
             label="Programming language"
             readOnly
           />
@@ -85,6 +138,7 @@ export default function CodeWorkspace() {
               value={instructions}
               onChange={(event) => {
                 setInstructions(event.target.value);
+                setSelectedTemplate("");
                 setError("");
               }}
               placeholder="Example: Create a Python function that checks whether a number is prime."
@@ -125,8 +179,8 @@ export default function CodeWorkspace() {
               <Code2 size={32} />
               <h3>Your generated code will appear here</h3>
               <p>
-                Describe your coding task and select a programming
-                language to generate code.
+                Choose a template or describe your coding task,
+                select a programming language, and generate code.
               </p>
             </div>
           )}
