@@ -1,16 +1,15 @@
 
-import { useState, type FormEvent } from "react";
-import { Sparkles, WandSparkles } from "lucide-react";
-
-import CodeEditor from "../components/CodeEditor";
-import CodeOutput from "../components/CodeOutput";
+import { useState } from "react";
+import { Code2, Sparkles } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import AlertMessage from "../components/AlertMessage";
 import LoadingSpinner from "../components/LoadingSpinner";
-
+import CodeEditor from "../components/CodeEditor";
+import CodeOutput from "../components/CodeOutput";
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { validatePrompt } from "../utils/promptValidation";
 
 export default function CodeWorkspace() {
   useDocumentTitle("AI Code Generator");
@@ -21,18 +20,17 @@ export default function CodeWorkspace() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleGenerate = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleGenerate = async () => {
+    const validation = validatePrompt(instructions);
 
-    setError("");
-    setGeneratedCode("");
-
-    if (!instructions.trim()) {
-      setError("Please describe the code you want to generate.");
+    if (!validation.valid) {
+      setError(validation.error ?? "Invalid instructions.");
       return;
     }
 
     setIsLoading(true);
+    setError("");
+    setGeneratedCode("");
 
     try {
       const response = await aiService.generateCode({
@@ -43,94 +41,97 @@ export default function CodeWorkspace() {
 
       setGeneratedCode(response.result);
     } catch (err) {
-      setError(
-        getErrorMessage(err, "Code generation failed. Please try again.")
-      );
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="workspace-page">
       <PageHeader
         title="AI Code Generator"
-        description="Transform your instructions into code using AI assistance."
+        description="Describe what you want to build and generate code with AI."
+        icon={<Code2 size={24} />}
       />
 
       {error && (
         <AlertMessage
           type="error"
-          title="Generation failed"
           message={error}
           onClose={() => setError("")}
         />
       )}
 
-      <form onSubmit={handleGenerate} className="space-y-6">
-        <section className="rounded-2xl border border-slate-800 bg-[#101626] p-5 sm:p-6">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="rounded-xl bg-violet-500/10 p-3 text-violet-400">
-              <WandSparkles size={23} />
-            </div>
+      <div className="workspace-grid">
+        <section className="workspace-panel">
+          <CodeEditor
+            value=""
+            onChange={() => undefined}
+            language={language}
+            onLanguageChange={setLanguage}
+            label="Programming language"
+            readOnly
+          />
 
-            <div>
-              <h2 className="font-semibold text-white">
-                Describe your idea
-              </h2>
-              <p className="mt-1 text-sm text-slate-400">
-                Explain what you want the AI to build.
+          <div className="form-group">
+            <label htmlFor="generation-instructions">
+              Describe what you want to generate
+            </label>
+
+            <textarea
+              id="generation-instructions"
+              className="form-textarea"
+              value={instructions}
+              onChange={(event) => {
+                setInstructions(event.target.value);
+                setError("");
+              }}
+              placeholder="Example: Create a Python function that checks whether a number is prime."
+              rows={8}
+              maxLength={4000}
+            />
+
+            <small>
+              {instructions.length}/4000 characters
+            </small>
+          </div>
+
+          <button
+            type="button"
+            className="btn btn-primary workspace-action"
+            onClick={handleGenerate}
+            disabled={isLoading || !instructions.trim()}
+          >
+            {isLoading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <Sparkles size={18} />
+            )}
+            {isLoading ? "Generating..." : "Generate Code"}
+          </button>
+        </section>
+
+        <section className="workspace-panel">
+          {generatedCode ? (
+            <CodeOutput
+              code={generatedCode}
+              language={language}
+              title="Generated Code"
+              filename="generated-code"
+            />
+          ) : (
+            <div className="workspace-placeholder">
+              <Code2 size={32} />
+              <h3>Your generated code will appear here</h3>
+              <p>
+                Describe your coding task and select a programming
+                language to generate code.
               </p>
             </div>
-          </div>
-
-          <textarea
-            value={instructions}
-            onChange={(event) => setInstructions(event.target.value)}
-            placeholder="Example: Create a Python function that sorts a list using merge sort and explains its time complexity."
-            rows={5}
-            maxLength={10000}
-            className="w-full resize-y rounded-xl border border-slate-700 bg-[#080b16] p-4 text-sm leading-7 text-white outline-none transition placeholder:text-slate-600 focus:border-violet-500"
-          />
-
-          <div className="mt-2 text-right text-xs text-slate-500">
-            {instructions.length.toLocaleString()} / 10,000 characters
-          </div>
+          )}
         </section>
-
-        <section className="space-y-4">
-          <CodeEditor
-            code=""
-            language={language}
-            onChange={() => undefined}
-            onLanguageChange={setLanguage}
-            readOnly
-            placeholder="Select a programming language above. Your generated code will appear below."
-            minHeight={100}
-          />
-        </section>
-
-        <button
-          type="submit"
-          disabled={isLoading || !instructions.trim()}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-6 py-3.5 font-semibold text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-        >
-          <Sparkles size={19} />
-          {isLoading ? "Generating code..." : "Generate code"}
-        </button>
-      </form>
-
-      {isLoading && (
-        <LoadingSpinner message="DevMind AI is generating your code..." />
-      )}
-
-      {!isLoading && generatedCode && (
-        <CodeOutput
-          code={generatedCode}
-          language={language}
-          title="AI Generated Code"
-        />
-      )}
+      </div>
     </div>
   );
 }
