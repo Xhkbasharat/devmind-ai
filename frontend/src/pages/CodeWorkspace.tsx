@@ -6,6 +6,8 @@ import {
   WandSparkles,
   History,
   Trash2,
+  Search,
+  Filter,
 } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import AlertMessage from "../components/AlertMessage";
@@ -31,6 +33,12 @@ export default function CodeWorkspace() {
 
   const {
     history,
+    filteredHistory,
+    languages,
+    searchQuery,
+    setSearchQuery,
+    languageFilter,
+    setLanguageFilter,
     addEntry,
     removeEntry,
     clearHistory,
@@ -84,7 +92,9 @@ export default function CodeWorkspace() {
     }
   };
 
-  const handleRestoreHistory = (item: (typeof history)[number]) => {
+  const handleRestoreHistory = (
+    item: (typeof history)[number]
+  ) => {
     setInstructions(item.prompt);
     setLanguage(item.language);
     setGeneratedCode(item.code);
@@ -230,36 +240,75 @@ export default function CodeWorkspace() {
             </button>
           </div>
 
-          {history.map((item) => (
-            <article className="history-item" key={item.id}>
-              <div className="history-item-info">
-                <strong>{item.language}</strong>
-                <p>{item.prompt}</p>
-                <small>
-                  {new Date(item.createdAt).toLocaleString()}
-                </small>
-              </div>
+          <div className="history-filters">
+            <div className="history-search">
+              <Search size={16} />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(event) =>
+                  setSearchQuery(event.target.value)
+                }
+                placeholder="Search prompts or code..."
+              />
+            </div>
 
-              <div className="history-item-actions">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => handleRestoreHistory(item)}
-                >
-                  Restore
-                </button>
+            <div className="history-language-filter">
+              <Filter size={16} />
+              <select
+                value={languageFilter}
+                onChange={(event) =>
+                  setLanguageFilter(event.target.value)
+                }
+              >
+                <option value="all">All languages</option>
 
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => removeEntry(item.id)}
-                  aria-label="Delete history entry"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </article>
-          ))}
+                {languages.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {filteredHistory.length === 0 ? (
+            <div className="workspace-placeholder">
+              <Search size={24} />
+              <p>No matching generations found.</p>
+            </div>
+          ) : (
+            filteredHistory.map((item) => (
+              <article className="history-item" key={item.id}>
+                <div className="history-item-info">
+                  <strong>{item.language}</strong>
+                  <p>{item.prompt}</p>
+                  <small>
+                    {new Date(item.createdAt).toLocaleString()}
+                  </small>
+                </div>
+
+                <div className="history-item-actions">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => handleRestoreHistory(item)}
+                  >
+                    Restore
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => removeEntry(item.id)}
+                    aria-label="Delete history entry"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </article>
+            ))
+          )}
         </section>
       )}
     </div>
