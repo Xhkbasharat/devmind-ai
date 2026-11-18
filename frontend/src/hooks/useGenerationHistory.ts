@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export interface GenerationHistoryItem {
   id: string;
@@ -16,15 +16,11 @@ function loadHistory(): GenerationHistoryItem[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
 
-    if (!stored) {
-      return [];
-    }
+    if (!stored) return [];
 
     const parsed: unknown = JSON.parse(stored);
 
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
+    if (!Array.isArray(parsed)) return [];
 
     return parsed
       .filter(
@@ -47,6 +43,9 @@ export function useGenerationHistory() {
   const [history, setHistory] =
     useState<GenerationHistoryItem[]>(loadHistory);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [languageFilter, setLanguageFilter] = useState("all");
+
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -54,7 +53,7 @@ export function useGenerationHistory() {
         JSON.stringify(history)
       );
     } catch {
-      // Keep the current session usable if storage is unavailable.
+      // Keep the session usable if storage is unavailable.
     }
   }, [history]);
 
@@ -85,8 +84,36 @@ export function useGenerationHistory() {
     setHistory([]);
   }, []);
 
+  const languages = useMemo(
+    () => Array.from(new Set(history.map((item) => item.language))),
+    [history]
+  );
+
+  const filteredHistory = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return history.filter((item) => {
+      const matchesSearch =
+        !query ||
+        item.prompt.toLowerCase().includes(query) ||
+        item.code.toLowerCase().includes(query);
+
+      const matchesLanguage =
+        languageFilter === "all" ||
+        item.language === languageFilter;
+
+      return matchesSearch && matchesLanguage;
+    });
+  }, [history, searchQuery, languageFilter]);
+
   return {
     history,
+    filteredHistory,
+    languages,
+    searchQuery,
+    setSearchQuery,
+    languageFilter,
+    setLanguageFilter,
     addEntry,
     removeEntry,
     clearHistory,
