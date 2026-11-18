@@ -1,6 +1,12 @@
 
 import { useState } from "react";
-import { Code2, Sparkles, WandSparkles } from "lucide-react";
+import {
+  Code2,
+  Sparkles,
+  WandSparkles,
+  History,
+  Trash2,
+} from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import AlertMessage from "../components/AlertMessage";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -11,6 +17,7 @@ import { getErrorMessage } from "../services/error";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { validatePrompt } from "../utils/promptValidation";
 import { promptTemplates } from "../utils/promptTemplates";
+import { useGenerationHistory } from "../hooks/useGenerationHistory";
 
 export default function CodeWorkspace() {
   useDocumentTitle("AI Code Generator");
@@ -21,6 +28,13 @@ export default function CodeWorkspace() {
   const [generatedCode, setGeneratedCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const {
+    history,
+    addEntry,
+    removeEntry,
+    clearHistory,
+  } = useGenerationHistory();
 
   const handleTemplateChange = (templateId: string) => {
     setSelectedTemplate(templateId);
@@ -57,6 +71,12 @@ export default function CodeWorkspace() {
       });
 
       setGeneratedCode(response.result);
+
+      addEntry({
+        prompt: instructions.trim(),
+        language,
+        code: response.result,
+      });
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -64,11 +84,19 @@ export default function CodeWorkspace() {
     }
   };
 
+  const handleRestoreHistory = (item: (typeof history)[number]) => {
+    setInstructions(item.prompt);
+    setLanguage(item.language);
+    setGeneratedCode(item.code);
+    setSelectedTemplate("");
+    setError("");
+  };
+
   return (
     <div className="workspace-page">
       <PageHeader
         title="AI Code Generator"
-        description="Describe what you want to build or start with a ready-made template."
+        description="Generate code, use prompt templates, and revisit previous generations."
         icon={<Code2 size={24} />}
       />
 
@@ -146,9 +174,7 @@ export default function CodeWorkspace() {
               maxLength={4000}
             />
 
-            <small>
-              {instructions.length}/4000 characters
-            </small>
+            <small>{instructions.length}/4000 characters</small>
           </div>
 
           <button
@@ -186,6 +212,56 @@ export default function CodeWorkspace() {
           )}
         </section>
       </div>
+
+      {history.length > 0 && (
+        <section className="workspace-panel generation-history">
+          <div className="history-header">
+            <h3>
+              <History size={20} /> Generation History
+            </h3>
+
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={clearHistory}
+            >
+              <Trash2 size={16} />
+              Clear History
+            </button>
+          </div>
+
+          {history.map((item) => (
+            <article className="history-item" key={item.id}>
+              <div className="history-item-info">
+                <strong>{item.language}</strong>
+                <p>{item.prompt}</p>
+                <small>
+                  {new Date(item.createdAt).toLocaleString()}
+                </small>
+              </div>
+
+              <div className="history-item-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => handleRestoreHistory(item)}
+                >
+                  Restore
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => removeEntry(item.id)}
+                  aria-label="Delete history entry"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
     </div>
   );
 }
