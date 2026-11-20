@@ -1,0 +1,128 @@
+
+.quality-score-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.quality-score-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.quality-score-heading h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.quality-score-heading p {
+  margin: 0;
+  color: var(--text-secondary, #a1a1aa);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.quality-grade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  min-height: 82px;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: 18px;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.quality-grade strong {
+  color: #a78bfa;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.quality-grade span {
+  margin-top: 5px;
+  color: var(--text-secondary, #a1a1aa);
+  font-size: 0.75rem;
+}
+
+.quality-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.quality-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quality-metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quality-metric-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary, #a1a1aa);
+  font-size: 0.85rem;
+}
+
+.quality-metric-header strong {
+  color: var(--text-primary, #f4f4f5);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.quality-progress-track {
+  width: 100%;
+  height: 9px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: rgba(148, 163, 184, 0.15);
+}
+
+.quality-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6366f1, #a78bfa);
+  transition: width 0.4s ease;
+}
+
+.quality-score-note {
+  color: var(--text-secondary, #a1a1aa);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .quality-score-heading {
+    align-items: flex-start;
+  }
+
+  .quality-grade {
+    min-width: 68px;
+    min-height: 68px;
+    border-radius: 14px;
+  }
+
+  .quality-grade strong {
+    font-size: 1.6rem;
+  }
+
+  .quality-metrics {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
