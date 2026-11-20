@@ -1,6 +1,14 @@
 
-import { Award, BookOpen, Gauge, Layers, Wrench } from "lucide-react";
+import {
+  Award,
+  BookOpen,
+  Gauge,
+  Layers,
+  Wrench,
+} from "lucide-react";
+
 import { calculateQualityScore } from "../utils/qualityScore";
+import "../styles/quality-score.css";
 
 interface QualityScoreCardProps {
   code: string;
@@ -24,6 +32,7 @@ function ScoreMetric({
           {icon}
           {label}
         </span>
+
         <strong>{value}/100</strong>
       </div>
 
@@ -57,6 +66,7 @@ export default function QualityScoreCard({
             <Award size={20} />
             Code Quality Score
           </h3>
+
           <p>{score.summary}</p>
         </div>
 
