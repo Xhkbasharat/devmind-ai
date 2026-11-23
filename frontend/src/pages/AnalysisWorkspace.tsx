@@ -1,11 +1,13 @@
 
 import { useState } from "react";
-import { BarChart3, Sparkles } from "lucide-react";
+import { BarChart3, AlertTriangle, CheckCircle2 } from "lucide-react";
+
 import PageHeader from "../components/PageHeader";
 import AlertMessage from "../components/AlertMessage";
 import LoadingSpinner from "../components/LoadingSpinner";
 import CodeEditor from "../components/CodeEditor";
 import CodeFileUpload from "../components/CodeFileUpload";
+import QualityScoreCard from "../components/QualityScoreCard";
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
@@ -14,17 +16,17 @@ import { analyzeComplexity } from "../utils/complexity";
 import { validateCodeInput } from "../utils/codeValidation";
 
 interface AnalysisIssue {
-  severity: string;
-  message: string;
-  description?: string;
+  type?: string;
+  severity?: string;
+  message?: string;
   line?: number;
-  rule?: string;
+  description?: string;
 }
 
 interface AnalysisResult {
-  score: number;
-  summary: string;
-  issues: AnalysisIssue[];
+  score?: number;
+  summary?: string;
+  issues?: AnalysisIssue[];
 }
 
 export default function AnalysisWorkspace() {
@@ -38,16 +40,6 @@ export default function AnalysisWorkspace() {
 
   const metrics = calculateCodeMetrics(code, language);
   const complexity = analyzeComplexity(code, language);
-
-  const handleFileRead = (
-    fileCode: string,
-    fileLanguage: string
-  ) => {
-    setCode(fileCode);
-    setLanguage(fileLanguage);
-    setResult(null);
-    setError("");
-  };
 
   const handleAnalyze = async () => {
     const validation = validateCodeInput(code);
@@ -67,11 +59,7 @@ export default function AnalysisWorkspace() {
         language,
       });
 
-      setResult({
-        score: response.score,
-        summary: response.summary,
-        issues: response.issues,
-      });
+      setResult(response as AnalysisResult);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -79,15 +67,23 @@ export default function AnalysisWorkspace() {
     }
   };
 
+  const handleFileRead = (
+    fileCode: string,
+    fileLanguage: string
+  ) => {
+    setCode(fileCode);
+    setLanguage(fileLanguage);
+    setResult(null);
+    setError("");
+  };
+
   return (
     <div className="workspace-page">
       <PageHeader
-        title="AI Code Analyzer"
-        description="Inspect code quality, identify potential issues, and review improvement suggestions."
+        title="Code Analyzer"
+        description="Inspect code metrics, complexity, potential issues, and estimated quality."
         icon={<BarChart3 size={24} />}
       />
-
-      <CodeFileUpload onFileRead={handleFileRead} />
 
       {error && (
         <AlertMessage
@@ -97,124 +93,145 @@ export default function AnalysisWorkspace() {
         />
       )}
 
-      <div className="workspace-grid">
-        <section className="workspace-panel">
-          <CodeEditor
-            value={code}
-            onChange={setCode}
-            language={language}
-            onLanguageChange={setLanguage}
-            label="Code to analyze"
-          />
+      <section className="workspace-panel">
+        <CodeFileUpload onFileRead={handleFileRead} />
 
-          <button
-            type="button"
-            className="btn btn-primary workspace-action"
-            onClick={handleAnalyze}
-            disabled={isLoading || !code.trim()}
-          >
-            {isLoading ? (
-              <LoadingSpinner size="small" />
-            ) : (
-              <Sparkles size={18} />
-            )}
-            {isLoading ? "Analyzing..." : "Analyze Code"}
-          </button>
-        </section>
+        <CodeEditor
+          value={code}
+          onChange={(value) => {
+            setCode(value);
+            setResult(null);
+          }}
+          language={language}
+          onLanguageChange={(value) => {
+            setLanguage(value);
+            setResult(null);
+          }}
+          label="Source code"
+        />
 
-        <section className="workspace-panel">
-          {code.trim() && (
-            <div className="analysis-metrics">
-              <h3>Code Metrics</h3>
+        <button
+          type="button"
+          className="btn btn-primary workspace-action"
+          onClick={handleAnalyze}
+          disabled={isLoading || !code.trim()}
+        >
+          {isLoading ? (
+            <LoadingSpinner size="small" />
+          ) : (
+            <BarChart3 size={18} />
+          )}
+          {isLoading ? "Analyzing..." : "Analyze Code"}
+        </button>
+      </section>
 
-              <div className="analysis-metric-grid">
-                <div className="analysis-metric">
-                  <strong>{metrics.totalLines}</strong>
-                  <span>Total Lines</span>
-                </div>
-                <div className="analysis-metric">
-                  <strong>{metrics.nonEmptyLines}</strong>
-                  <span>Non-empty Lines</span>
-                </div>
-                <div className="analysis-metric">
-                  <strong>{metrics.commentLines}</strong>
-                  <span>Comment Lines</span>
-                </div>
-                <div className="analysis-metric">
-                  <strong>{metrics.words}</strong>
-                  <span>Words</span>
-                </div>
+      {code.trim() && (
+        <>
+          <QualityScoreCard code={code} />
+
+          <section className="workspace-panel">
+            <h3>Code Metrics</h3>
+
+            <div className="metrics-grid">
+              <div className="metric-card">
+                <strong>{metrics.totalLines}</strong>
+                <span>Total Lines</span>
               </div>
 
-              <h3>Complexity Estimate</h3>
-
-              <div className="analysis-complexity">
-                <strong>
-                  {complexity.level} ({complexity.score}/100)
-                </strong>
-                <p>{complexity.explanation}</p>
-                <p>
-                  Functions: {complexity.functionCount} ·
-                  Conditionals: {complexity.conditionalCount} ·
-                  Loops: {complexity.loopCount} ·
-                  Nesting depth: {complexity.nestingDepth}
-                </p>
+              <div className="metric-card">
+                <strong>{metrics.codeLines}</strong>
+                <span>Code Lines</span>
               </div>
+
+              <div className="metric-card">
+                <strong>{metrics.commentLines}</strong>
+                <span>Comment Lines</span>
+              </div>
+
+              <div className="metric-card">
+                <strong>{metrics.blankLines}</strong>
+                <span>Blank Lines</span>
+              </div>
+            </div>
+          </section>
+
+          <section className="workspace-panel">
+            <h3>Complexity Analysis</h3>
+
+            <div className="complexity-summary">
+              <strong>{complexity.level}</strong>
+              <span>Complexity score: {complexity.score}</span>
+            </div>
+
+            <p>{complexity.explanation}</p>
+
+            <div className="metrics-grid">
+              <div className="metric-card">
+                <strong>{complexity.functionCount}</strong>
+                <span>Functions</span>
+              </div>
+
+              <div className="metric-card">
+                <strong>{complexity.conditionalCount}</strong>
+                <span>Conditionals</span>
+              </div>
+
+              <div className="metric-card">
+                <strong>{complexity.loopCount}</strong>
+                <span>Loops</span>
+              </div>
+
+              <div className="metric-card">
+                <strong>{complexity.nestingDepth}</strong>
+                <span>Nesting Depth</span>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+
+      {result && (
+        <section className="workspace-panel">
+          <h3>AI Analysis Results</h3>
+
+          {typeof result.score === "number" && (
+            <div className="analysis-score">
+              AI Analysis Score: {result.score}/100
             </div>
           )}
 
-          {result ? (
-            <div className="analysis-results">
-              <h3>AI Analysis Results</h3>
+          {result.summary && <p>{result.summary}</p>}
 
-              <div className="analysis-score">
-                <span className="analysis-score-value">
-                  {result.score}
-                </span>
-                <span>Quality Score</span>
-              </div>
+          {result.issues && result.issues.length > 0 ? (
+            <div className="analysis-issues">
+              {result.issues.map((issue, index) => (
+                <article className="analysis-issue" key={index}>
+                  <div>
+                    <AlertTriangle size={18} />
+                    <strong>
+                      {issue.type || issue.severity || "Finding"}
+                    </strong>
+                  </div>
 
-              <p>{result.summary}</p>
+                  <p>
+                    {issue.message ||
+                      issue.description ||
+                      "No additional details provided."}
+                  </p>
 
-              <h4>Detected Issues ({result.issues.length})</h4>
-
-              {result.issues.length === 0 ? (
-                <p>No issues were detected.</p>
-              ) : (
-                <div className="analysis-issues">
-                  {result.issues.map((issue, index) => (
-                    <article
-                      className="analysis-issue"
-                      key={`${issue.rule ?? "issue"}-${index}`}
-                    >
-                      <strong>
-                        {issue.severity}: {issue.message}
-                      </strong>
-
-                      {issue.description && (
-                        <p>{issue.description}</p>
-                      )}
-
-                      {issue.line !== undefined && (
-                        <span>Line {issue.line}</span>
-                      )}
-                    </article>
-                  ))}
-                </div>
-              )}
+                  {typeof issue.line === "number" && (
+                    <small>Line {issue.line}</small>
+                  )}
+                </article>
+              ))}
             </div>
           ) : (
-            <div className="workspace-placeholder">
-              <BarChart3 size={32} />
-              <h3>Your AI analysis will appear here</h3>
-              <p>
-                Enter or upload code, then run the analyzer to
-                receive an AI quality review.
-              </p>
-            </div>
+            <p>
+              <CheckCircle2 size={16} /> No issues were returned by the AI analysis.
+            </p>
           )}
         </section>
-      </div>
+      )}
     </div>
   );
 }
