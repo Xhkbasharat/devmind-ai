@@ -6,6 +6,8 @@ import {
   Activity,
 } from "lucide-react";
 
+import "../styles/analysis-summary.css";
+
 type AnalysisStatus = "success" | "warning" | "info";
 
 interface AnalysisSummaryProps {
@@ -39,6 +41,11 @@ export default function AnalysisSummary({
   const config = statusConfig[status];
   const StatusIcon = config.icon;
 
+  const safeScore =
+    typeof score === "number"
+      ? Math.max(0, Math.min(100, score))
+      : null;
+
   return (
     <section
       className={`workspace-panel analysis-summary analysis-summary-${status}`}
@@ -58,10 +65,10 @@ export default function AnalysisSummary({
 
       <p>{summary}</p>
 
-      {typeof score === "number" && (
+      {safeScore !== null && (
         <div className="analysis-summary-score">
           <span>Analysis Score</span>
-          <strong>{Math.max(0, Math.min(100, score))}/100</strong>
+          <strong>{safeScore}/100</strong>
         </div>
       )}
     </section>
