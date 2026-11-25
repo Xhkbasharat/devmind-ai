@@ -13,6 +13,8 @@ import CodeEditor from "../components/CodeEditor";
 import CodeFileUpload from "../components/CodeFileUpload";
 import QualityScoreCard from "../components/QualityScoreCard";
 import AnalysisSummary from "../components/AnalysisSummary";
+import SeverityBadge from "../components/SeverityBadge";
+
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
@@ -83,11 +85,11 @@ export default function AnalysisWorkspace() {
   };
 
   const summaryStatus =
-    result?.issues?.some(
-      (issue) =>
-        issue.severity?.toLowerCase() === "high" ||
-        issue.severity?.toLowerCase() === "critical"
-    )
+    result?.issues?.some((issue) => {
+      const severity = issue.severity?.toLowerCase();
+
+      return severity === "high" || severity === "critical";
+    })
       ? "warning"
       : result?.issues?.length
         ? "info"
@@ -232,11 +234,17 @@ export default function AnalysisWorkspace() {
             <div className="analysis-issues">
               {result.issues.map((issue, index) => (
                 <article className="analysis-issue" key={index}>
-                  <div>
-                    <AlertTriangle size={18} />
-                    <strong>
-                      {issue.type || issue.severity || "Finding"}
-                    </strong>
+                  <div className="analysis-issue-header">
+                    <div>
+                      <AlertTriangle size={18} />
+                      <strong>
+                        {issue.type || "Finding"}
+                      </strong>
+                    </div>
+
+                    <SeverityBadge
+                      severity={issue.severity || "info"}
+                    />
                   </div>
 
                   <p>
@@ -253,7 +261,8 @@ export default function AnalysisWorkspace() {
             </div>
           ) : (
             <p>
-              <CheckCircle2 size={16} /> No issues were returned by the AI analysis.
+              <CheckCircle2 size={16} />
+              No issues were returned by the AI analysis.
             </p>
           )}
         </section>
