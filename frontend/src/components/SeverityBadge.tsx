@@ -7,6 +7,8 @@ import {
   ShieldAlert,
 } from "lucide-react";
 
+import "../styles/severity-badge.css";
+
 export type IssueSeverity =
   | "critical"
   | "high"
