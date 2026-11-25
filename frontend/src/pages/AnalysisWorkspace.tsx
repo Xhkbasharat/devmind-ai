@@ -4,6 +4,8 @@ import {
   BarChart3,
   AlertTriangle,
   CheckCircle2,
+  Search,
+  Filter,
 } from "lucide-react";
 
 import PageHeader from "../components/PageHeader";
@@ -21,6 +23,8 @@ import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { calculateCodeMetrics } from "../utils/codeMetrics";
 import { analyzeComplexity } from "../utils/complexity";
 import { validateCodeInput } from "../utils/codeValidation";
+import { filterIssues } from "../utils/filterIssues";
+import type { SeverityFilter } from "../utils/filterIssues";
 
 interface AnalysisIssue {
   type?: string;
@@ -45,8 +49,21 @@ export default function AnalysisWorkspace() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [severityFilter, setSeverityFilter] =
+    useState<SeverityFilter>("all");
+
+  const [issueSearch, setIssueSearch] = useState("");
+
   const metrics = calculateCodeMetrics(code, language);
   const complexity = analyzeComplexity(code, language);
+
+  const filteredIssues = filterIssues(
+    result?.issues ?? [],
+    {
+      severity: severityFilter,
+      search: issueSearch,
+    }
+  );
 
   const handleAnalyze = async () => {
     const validation = validateCodeInput(code);
@@ -59,6 +76,8 @@ export default function AnalysisWorkspace() {
     setIsLoading(true);
     setError("");
     setResult(null);
+    setSeverityFilter("all");
+    setIssueSearch("");
 
     try {
       const response = await aiService.analyzeCode({
@@ -82,6 +101,8 @@ export default function AnalysisWorkspace() {
     setLanguage(fileLanguage);
     setResult(null);
     setError("");
+    setSeverityFilter("all");
+    setIssueSearch("");
   };
 
   const summaryStatus =
@@ -231,34 +252,84 @@ export default function AnalysisWorkspace() {
             )}
 
           {result.issues && result.issues.length > 0 ? (
-            <div className="analysis-issues">
-              {result.issues.map((issue, index) => (
-                <article className="analysis-issue" key={index}>
-                  <div className="analysis-issue-header">
-                    <div>
-                      <AlertTriangle size={18} />
-                      <strong>
-                        {issue.type || "Finding"}
-                      </strong>
-                    </div>
+            <>
+              <div className="issue-filter-toolbar">
+                <div className="history-search">
+                  <Search size={16} />
+                  <input
+                    type="search"
+                    value={issueSearch}
+                    onChange={(event) =>
+                      setIssueSearch(event.target.value)
+                    }
+                    placeholder="Search analysis findings..."
+                    aria-label="Search analysis findings"
+                  />
+                </div>
 
-                    <SeverityBadge
-                      severity={issue.severity || "info"}
-                    />
-                  </div>
+                <div className="history-language-filter">
+                  <Filter size={16} />
 
-                  <p>
-                    {issue.message ||
-                      issue.description ||
-                      "No additional details provided."}
-                  </p>
+                  <select
+                    value={severityFilter}
+                    onChange={(event) =>
+                      setSeverityFilter(
+                        event.target.value as SeverityFilter
+                      )
+                    }
+                    aria-label="Filter findings by severity"
+                  >
+                    <option value="all">All severities</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                    <option value="info">Info</option>
+                  </select>
+                </div>
+              </div>
 
-                  {typeof issue.line === "number" && (
-                    <small>Line {issue.line}</small>
-                  )}
-                </article>
-              ))}
-            </div>
+              <p className="issue-result-count">
+                Showing {filteredIssues.length} of{" "}
+                {result.issues.length} findings
+              </p>
+
+              {filteredIssues.length > 0 ? (
+                <div className="analysis-issues">
+                  {filteredIssues.map((issue, index) => (
+                    <article
+                      className="analysis-issue"
+                      key={`${issue.line ?? "unknown"}-${index}`}
+                    >
+                      <div className="analysis-issue-header">
+                        <div>
+                          <AlertTriangle size={18} />
+                          <strong>
+                            {issue.type || "Finding"}
+                          </strong>
+                        </div>
+
+                        <SeverityBadge
+                          severity={issue.severity || "info"}
+                        />
+                      </div>
+
+                      <p>
+                        {issue.message ||
+                          issue.description ||
+                          "No additional details provided."}
+                      </p>
+
+                      {typeof issue.line === "number" && (
+                        <small>Line {issue.line}</small>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p>No findings match your filters.</p>
+              )}
+            </>
           ) : (
             <p>
               <CheckCircle2 size={16} />
