@@ -1,6 +1,10 @@
 
 import { useState } from "react";
-import { BarChart3, AlertTriangle, CheckCircle2 } from "lucide-react";
+import {
+  BarChart3,
+  AlertTriangle,
+  CheckCircle2,
+} from "lucide-react";
 
 import PageHeader from "../components/PageHeader";
 import AlertMessage from "../components/AlertMessage";
@@ -8,6 +12,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import CodeEditor from "../components/CodeEditor";
 import CodeFileUpload from "../components/CodeFileUpload";
 import QualityScoreCard from "../components/QualityScoreCard";
+import AnalysisSummary from "../components/AnalysisSummary";
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
@@ -76,6 +81,17 @@ export default function AnalysisWorkspace() {
     setResult(null);
     setError("");
   };
+
+  const summaryStatus =
+    result?.issues?.some(
+      (issue) =>
+        issue.severity?.toLowerCase() === "high" ||
+        issue.severity?.toLowerCase() === "critical"
+    )
+      ? "warning"
+      : result?.issues?.length
+        ? "info"
+        : "success";
 
   return (
     <div className="workspace-page">
@@ -194,13 +210,23 @@ export default function AnalysisWorkspace() {
         <section className="workspace-panel">
           <h3>AI Analysis Results</h3>
 
-          {typeof result.score === "number" && (
-            <div className="analysis-score">
-              AI Analysis Score: {result.score}/100
-            </div>
+          {result.summary && (
+            <AnalysisSummary
+              title="Analysis Overview"
+              summary={result.summary}
+              status={summaryStatus}
+              score={result.score}
+            />
           )}
 
-          {result.summary && <p>{result.summary}</p>}
+          {!result.summary &&
+            typeof result.score === "number" && (
+              <AnalysisSummary
+                title="Analysis Overview"
+                summary="The AI analysis has returned a score."
+                score={result.score}
+              />
+            )}
 
           {result.issues && result.issues.length > 0 ? (
             <div className="analysis-issues">
