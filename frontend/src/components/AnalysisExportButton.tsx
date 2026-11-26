@@ -3,6 +3,8 @@ import { Download } from "lucide-react";
 import { exportAnalysisReport } from "../utils/exportAnalysis";
 import type { FilterableIssue } from "../utils/filterIssues";
 
+import "../styles/analysis-export.css";
+
 interface AnalysisExportButtonProps {
   language: string;
   issues: FilterableIssue[];
