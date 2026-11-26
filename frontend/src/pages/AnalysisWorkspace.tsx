@@ -18,6 +18,7 @@ import AnalysisSummary from "../components/AnalysisSummary";
 import SeverityBadge from "../components/SeverityBadge";
 import AnalysisExportButton from "../components/AnalysisExportButton";
 import AnalysisHistory from "../components/AnalysisHistory";
+import AnalysisStatisticsCard from "../components/AnalysisStatisticsCard";
 
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
@@ -142,7 +143,6 @@ export default function AnalysisWorkspace() {
   const summaryStatus =
     result?.issues?.some((issue) => {
       const severity = issue.severity?.toLowerCase();
-
       return severity === "high" || severity === "critical";
     })
       ? "warning"
@@ -210,17 +210,14 @@ export default function AnalysisWorkspace() {
                 <strong>{metrics.totalLines}</strong>
                 <span>Total Lines</span>
               </div>
-
               <div className="metric-card">
                 <strong>{metrics.codeLines}</strong>
                 <span>Code Lines</span>
               </div>
-
               <div className="metric-card">
                 <strong>{metrics.commentLines}</strong>
                 <span>Comment Lines</span>
               </div>
-
               <div className="metric-card">
                 <strong>{metrics.blankLines}</strong>
                 <span>Blank Lines</span>
@@ -243,17 +240,14 @@ export default function AnalysisWorkspace() {
                 <strong>{complexity.functionCount}</strong>
                 <span>Functions</span>
               </div>
-
               <div className="metric-card">
                 <strong>{complexity.conditionalCount}</strong>
                 <span>Conditionals</span>
               </div>
-
               <div className="metric-card">
                 <strong>{complexity.loopCount}</strong>
                 <span>Loops</span>
               </div>
-
               <div className="metric-card">
                 <strong>{complexity.nestingDepth}</strong>
                 <span>Nesting Depth</span>
@@ -264,122 +258,127 @@ export default function AnalysisWorkspace() {
       )}
 
       {result && (
-        <section className="workspace-panel">
-          <div className="analysis-results-header">
-            <h3>AI Analysis Results</h3>
+        <>
+          <AnalysisStatisticsCard
+            issues={result.issues ?? []}
+          />
 
-            <AnalysisExportButton
-              language={language}
-              issues={result.issues ?? []}
-              score={result.score}
-              summary={result.summary}
-            />
-          </div>
+          <section className="workspace-panel">
+            <div className="analysis-results-header">
+              <h3>AI Analysis Results</h3>
 
-          {result.summary && (
-            <AnalysisSummary
-              title="Analysis Overview"
-              summary={result.summary}
-              status={summaryStatus}
-              score={result.score}
-            />
-          )}
+              <AnalysisExportButton
+                language={language}
+                issues={result.issues ?? []}
+                score={result.score}
+                summary={result.summary}
+              />
+            </div>
 
-          {!result.summary &&
-            typeof result.score === "number" && (
+            {result.summary && (
               <AnalysisSummary
                 title="Analysis Overview"
-                summary="The AI analysis has returned a score."
+                summary={result.summary}
+                status={summaryStatus}
                 score={result.score}
               />
             )}
 
-          {result.issues && result.issues.length > 0 ? (
-            <>
-              <div className="issue-filter-toolbar">
-                <div className="history-search">
-                  <Search size={16} />
-                  <input
-                    type="search"
-                    value={issueSearch}
-                    onChange={(event) =>
-                      setIssueSearch(event.target.value)
-                    }
-                    placeholder="Search analysis findings..."
-                    aria-label="Search analysis findings"
-                  />
-                </div>
+            {!result.summary &&
+              typeof result.score === "number" && (
+                <AnalysisSummary
+                  title="Analysis Overview"
+                  summary="The AI analysis has returned a score."
+                  score={result.score}
+                />
+              )}
 
-                <div className="history-language-filter">
-                  <Filter size={16} />
+            {result.issues && result.issues.length > 0 ? (
+              <>
+                <div className="issue-filter-toolbar">
+                  <div className="history-search">
+                    <Search size={16} />
+                    <input
+                      type="search"
+                      value={issueSearch}
+                      onChange={(event) =>
+                        setIssueSearch(event.target.value)
+                      }
+                      placeholder="Search analysis findings..."
+                      aria-label="Search analysis findings"
+                    />
+                  </div>
 
-                  <select
-                    value={severityFilter}
-                    onChange={(event) =>
-                      setSeverityFilter(
-                        event.target.value as SeverityFilter
-                      )
-                    }
-                    aria-label="Filter findings by severity"
-                  >
-                    <option value="all">All severities</option>
-                    <option value="critical">Critical</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                    <option value="info">Info</option>
-                  </select>
-                </div>
-              </div>
-
-              <p className="issue-result-count">
-                Showing {filteredIssues.length} of{" "}
-                {result.issues.length} findings
-              </p>
-
-              {filteredIssues.length > 0 ? (
-                <div className="analysis-issues">
-                  {filteredIssues.map((issue, index) => (
-                    <article
-                      className="analysis-issue"
-                      key={`${issue.line ?? "unknown"}-${index}`}
+                  <div className="history-language-filter">
+                    <Filter size={16} />
+                    <select
+                      value={severityFilter}
+                      onChange={(event) =>
+                        setSeverityFilter(
+                          event.target.value as SeverityFilter
+                        )
+                      }
+                      aria-label="Filter findings by severity"
                     >
-                      <div className="analysis-issue-header">
-                        <div>
-                          <AlertTriangle size={18} />
-                          <strong>
-                            {issue.type || "Finding"}
-                          </strong>
+                      <option value="all">All severities</option>
+                      <option value="critical">Critical</option>
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                      <option value="info">Info</option>
+                    </select>
+                  </div>
+                </div>
+
+                <p className="issue-result-count">
+                  Showing {filteredIssues.length} of{" "}
+                  {result.issues.length} findings
+                </p>
+
+                {filteredIssues.length > 0 ? (
+                  <div className="analysis-issues">
+                    {filteredIssues.map((issue, index) => (
+                      <article
+                        className="analysis-issue"
+                        key={`${issue.line ?? "unknown"}-${index}`}
+                      >
+                        <div className="analysis-issue-header">
+                          <div>
+                            <AlertTriangle size={18} />
+                            <strong>
+                              {issue.type || "Finding"}
+                            </strong>
+                          </div>
+
+                          <SeverityBadge
+                            severity={issue.severity || "info"}
+                          />
                         </div>
 
-                        <SeverityBadge
-                          severity={issue.severity || "info"}
-                        />
-                      </div>
+                        <p>
+                          {issue.message ||
+                            issue.description ||
+                            "No additional details provided."}
+                        </p>
 
-                      <p>
-                        {issue.message ||
-                          issue.description ||
-                          "No additional details provided."}
-                      </p>
-
-                      {typeof issue.line === "number" && (
-                        <small>Line {issue.line}</small>
-                      )}
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <p>No findings match your filters.</p>
-              )}
-            </>
-          ) : (
-            <p>
-              <CheckCircle2 size={16} />
-              No issues were returned by the AI analysis.
-            </p>
-          )}
-        </section>
+                        {typeof issue.line === "number" && (
+                          <small>Line {issue.line}</small>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p>No findings match your filters.</p>
+                )}
+              </>
+            ) : (
+              <p>
+                <CheckCircle2 size={16} />
+                No issues were returned by the AI analysis.
+              </p>
+            )}
+          </section>
+        </>
       )}
 
       <AnalysisHistory
