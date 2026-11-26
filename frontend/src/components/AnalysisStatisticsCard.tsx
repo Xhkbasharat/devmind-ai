@@ -11,6 +11,8 @@ import {
 import { calculateAnalysisStatistics } from "../utils/analysisStatistics";
 import type { FilterableIssue } from "../utils/filterIssues";
 
+import "../styles/analysis-statistics.css";
+
 interface AnalysisStatisticsCardProps {
   issues: FilterableIssue[];
 }
