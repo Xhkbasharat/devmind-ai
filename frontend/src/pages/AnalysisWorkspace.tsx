@@ -17,15 +17,18 @@ import QualityScoreCard from "../components/QualityScoreCard";
 import AnalysisSummary from "../components/AnalysisSummary";
 import SeverityBadge from "../components/SeverityBadge";
 import AnalysisExportButton from "../components/AnalysisExportButton";
+import AnalysisHistory from "../components/AnalysisHistory";
 
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { useAnalysisHistory } from "../hooks/useAnalysisHistory";
 import { calculateCodeMetrics } from "../utils/codeMetrics";
 import { analyzeComplexity } from "../utils/complexity";
 import { validateCodeInput } from "../utils/codeValidation";
 import { filterIssues } from "../utils/filterIssues";
 import type { SeverityFilter } from "../utils/filterIssues";
+import type { AnalysisHistoryItem } from "../hooks/useAnalysisHistory";
 
 interface AnalysisIssue {
   type?: string;
@@ -54,6 +57,13 @@ export default function AnalysisWorkspace() {
     useState<SeverityFilter>("all");
 
   const [issueSearch, setIssueSearch] = useState("");
+
+  const {
+    history,
+    addAnalysis,
+    removeAnalysis,
+    clearHistory,
+  } = useAnalysisHistory();
 
   const metrics = calculateCodeMetrics(code, language);
   const complexity = analyzeComplexity(code, language);
@@ -86,7 +96,17 @@ export default function AnalysisWorkspace() {
         language,
       });
 
-      setResult(response as AnalysisResult);
+      const analysisResult = response as AnalysisResult;
+
+      setResult(analysisResult);
+
+      addAnalysis({
+        language,
+        code,
+        score: analysisResult.score,
+        summary: analysisResult.summary ?? "",
+        issues: analysisResult.issues ?? [],
+      });
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -104,6 +124,19 @@ export default function AnalysisWorkspace() {
     setError("");
     setSeverityFilter("all");
     setIssueSearch("");
+  };
+
+  const handleRestore = (item: AnalysisHistoryItem) => {
+    setCode(item.code);
+    setLanguage(item.language);
+    setResult({
+      score: item.score,
+      summary: item.summary,
+      issues: item.issues,
+    });
+    setSeverityFilter("all");
+    setIssueSearch("");
+    setError("");
   };
 
   const summaryStatus =
@@ -348,6 +381,13 @@ export default function AnalysisWorkspace() {
           )}
         </section>
       )}
+
+      <AnalysisHistory
+        history={history}
+        onRestore={handleRestore}
+        onRemove={removeAnalysis}
+        onClear={clearHistory}
+      />
     </div>
   );
 }
