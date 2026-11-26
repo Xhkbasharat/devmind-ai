@@ -9,6 +9,8 @@ import {
 import type { AnalysisHistoryItem } from "../hooks/useAnalysisHistory";
 import SeverityBadge from "./SeverityBadge";
 
+import "../styles/analysis-history.css";
+
 interface AnalysisHistoryProps {
   history: AnalysisHistoryItem[];
   onRestore: (item: AnalysisHistoryItem) => void;
@@ -24,11 +26,13 @@ export default function AnalysisHistory({
 }: AnalysisHistoryProps) {
   if (history.length === 0) {
     return (
-      <section className="workspace-panel">
+      <section className="workspace-panel analysis-history">
         <div className="workspace-placeholder">
           <History size={28} />
           <h3>No Analysis History</h3>
-          <p>Your previous code analysis reports will appear here.</p>
+          <p>
+            Your previous code analysis reports will appear here.
+          </p>
         </div>
       </section>
     );
@@ -73,9 +77,7 @@ export default function AnalysisHistory({
                   <span>Score: {item.score}/100</span>
                 )}
 
-                <span>
-                  {item.issues.length} findings
-                </span>
+                <span>{item.issues.length} findings</span>
 
                 <span>
                   {new Date(item.createdAt).toLocaleString()}
