@@ -16,6 +16,7 @@ import CodeFileUpload from "../components/CodeFileUpload";
 import QualityScoreCard from "../components/QualityScoreCard";
 import AnalysisSummary from "../components/AnalysisSummary";
 import SeverityBadge from "../components/SeverityBadge";
+import AnalysisExportButton from "../components/AnalysisExportButton";
 
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
@@ -231,7 +232,16 @@ export default function AnalysisWorkspace() {
 
       {result && (
         <section className="workspace-panel">
-          <h3>AI Analysis Results</h3>
+          <div className="analysis-results-header">
+            <h3>AI Analysis Results</h3>
+
+            <AnalysisExportButton
+              language={language}
+              issues={result.issues ?? []}
+              score={result.score}
+              summary={result.summary}
+            />
+          </div>
 
           {result.summary && (
             <AnalysisSummary
