@@ -1,0 +1,54 @@
+
+.analysis-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.analysis-results-header h3 {
+  margin: 0;
+}
+
+.analysis-export-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.analysis-export-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.analysis-export-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.analysis-export-button:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 3px;
+}
+
+@media (max-width: 520px) {
+  .analysis-results-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .analysis-export-button {
+    width: 100%;
+  }
+}
