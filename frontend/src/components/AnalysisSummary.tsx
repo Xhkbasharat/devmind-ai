@@ -1,4 +1,5 @@
 
+
 import {
   CheckCircle2,
   AlertTriangle,
@@ -42,23 +43,27 @@ export default function AnalysisSummary({
   const StatusIcon = config.icon;
 
   const safeScore =
-    typeof score === "number"
-      ? Math.max(0, Math.min(100, score))
+    typeof score === "number" && Number.isFinite(score)
+      ? Math.round(Math.max(0, Math.min(100, score)))
       : null;
 
   return (
     <section
       className={`workspace-panel analysis-summary analysis-summary-${status}`}
+      aria-labelledby="analysis-summary-title"
       aria-live="polite"
     >
       <div className="analysis-summary-header">
         <div className="analysis-summary-title">
-          <Activity size={20} />
-          <h3>{title}</h3>
+          <Activity size={20} aria-hidden="true" />
+          <h3 id="analysis-summary-title">{title}</h3>
         </div>
 
-        <span className="analysis-summary-status">
-          <StatusIcon size={16} />
+        <span
+          className="analysis-summary-status"
+          aria-label={`Analysis status: ${config.label}`}
+        >
+          <StatusIcon size={16} aria-hidden="true" />
           {config.label}
         </span>
       </div>
@@ -68,7 +73,9 @@ export default function AnalysisSummary({
       {safeScore !== null && (
         <div className="analysis-summary-score">
           <span>Analysis Score</span>
-          <strong>{safeScore}/100</strong>
+          <strong aria-label={`Score: ${safeScore} out of 100`}>
+            {safeScore}/100
+          </strong>
         </div>
       )}
     </section>
