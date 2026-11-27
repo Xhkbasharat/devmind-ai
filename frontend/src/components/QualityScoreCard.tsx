@@ -1,4 +1,5 @@
 
+
 import {
   Award,
   BookOpen,
@@ -25,6 +26,11 @@ function ScoreMetric({
   value,
   icon,
 }: ScoreMetricProps) {
+  const safeValue = Math.max(
+    0,
+    Math.min(100, Math.round(value))
+  );
+
   return (
     <div className="quality-metric">
       <div className="quality-metric-header">
@@ -33,20 +39,20 @@ function ScoreMetric({
           {label}
         </span>
 
-        <strong>{value}/100</strong>
+        <strong>{safeValue}/100</strong>
       </div>
 
       <div
         className="quality-progress-track"
         role="progressbar"
-        aria-label={label}
-        aria-valuenow={value}
+        aria-label={`${label} score`}
+        aria-valuenow={safeValue}
         aria-valuemin={0}
         aria-valuemax={100}
       >
         <div
           className="quality-progress-fill"
-          style={{ width: `${value}%` }}
+          style={{ width: `${safeValue}%` }}
         />
       </div>
     </div>
@@ -59,10 +65,13 @@ export default function QualityScoreCard({
   const score = calculateQualityScore(code);
 
   return (
-    <section className="workspace-panel quality-score-card">
+    <section
+      className="workspace-panel quality-score-card"
+      aria-labelledby="quality-score-title"
+    >
       <div className="quality-score-heading">
         <div>
-          <h3>
+          <h3 id="quality-score-title">
             <Award size={20} />
             Code Quality Score
           </h3>
@@ -70,7 +79,10 @@ export default function QualityScoreCard({
           <p>{score.summary}</p>
         </div>
 
-        <div className="quality-grade">
+        <div
+          className="quality-grade"
+          aria-label={`Overall grade ${score.grade}, score ${score.overall} out of 100`}
+        >
           <strong>{score.grade}</strong>
           <span>{score.overall}/100</span>
         </div>
