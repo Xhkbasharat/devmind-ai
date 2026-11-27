@@ -17,7 +17,6 @@ export function calculateQualityScore(
   code: string
 ): QualityScore {
   const lines = code.split("\n");
-
   const nonEmptyLines = lines.filter(
     (line) => line.trim().length > 0
   );
@@ -40,6 +39,12 @@ export function calculateQualityScore(
     (line) => line.length > 100
   ).length;
 
+  const functionCount = (
+    code.match(
+      /^\s*(?:async\s+)?(?:function\s+\w+|def\s+\w+)|^\s*(?:const|let|var)\s+\w+\s*=\s*(?:async\s*)?\([^)]*\)\s*=>/gm
+    ) || []
+  ).length;
+
   const conditionalCount = (
     code.match(/\b(if|else|switch|case|elif)\b/g) || []
   ).length;
@@ -51,6 +56,9 @@ export function calculateQualityScore(
   const commentLines = lines.filter((line) =>
     /^\s*(#|\/\/|\/\*|\*|<!--)/.test(line)
   ).length;
+
+  const averageFunctionDensity =
+    functionCount / Math.max(lineCount, 1);
 
   const documentationRatio =
     commentLines / Math.max(lineCount, 1);
@@ -74,10 +82,15 @@ export function calculateQualityScore(
     documentationRatio * 500
   );
 
+  const functionStructure = clamp(
+    100 - Math.max(0, averageFunctionDensity - 0.05) * 100
+  );
+
   const maintainability = clamp(
-    readability * 0.45 +
-    complexity * 0.35 +
-    documentation * 0.2
+    readability * 0.4 +
+    complexity * 0.3 +
+    documentation * 0.15 +
+    functionStructure * 0.15
   );
 
   const overall = clamp(
