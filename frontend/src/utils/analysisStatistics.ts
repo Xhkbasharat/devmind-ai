@@ -28,17 +28,33 @@ export function calculateAnalysisStatistics(
     const severity =
       issue.severity?.toLowerCase().trim() || "info";
 
-    if (severity in statistics && severity !== "total") {
-      statistics[severity as keyof Omit<AnalysisStatistics, "total">]++;
-    } else {
-      statistics.info++;
-    }
+    switch (severity) {
+      case "critical":
+        statistics.critical++;
+        statistics.unresolved++;
+        break;
 
-    if (
-      severity === "critical" ||
-      severity === "high"
-    ) {
-      statistics.unresolved++;
+      case "high":
+        statistics.high++;
+        statistics.unresolved++;
+        break;
+
+      case "medium":
+        statistics.medium++;
+        break;
+
+      case "low":
+        statistics.low++;
+        break;
+
+      case "info":
+      case "informational":
+        statistics.info++;
+        break;
+
+      default:
+        statistics.info++;
+        break;
     }
   }
 
