@@ -1,4 +1,5 @@
 
+
 import {
   AlertCircle,
   AlertTriangle,
@@ -51,11 +52,18 @@ const severityConfig = {
 export default function SeverityBadge({
   severity = "info",
 }: SeverityBadgeProps) {
-  const normalizedSeverity = severity.toLowerCase().trim();
+  const normalizedSeverity = severity
+    .toLowerCase()
+    .trim();
+
+  const normalizedValue =
+    normalizedSeverity === "informational"
+      ? "info"
+      : normalizedSeverity;
 
   const config =
     severityConfig[
-      normalizedSeverity as IssueSeverity
+      normalizedValue as IssueSeverity
     ] ?? severityConfig.info;
 
   const SeverityIcon = config.icon;
@@ -63,9 +71,10 @@ export default function SeverityBadge({
   return (
     <span
       className={`severity-badge ${config.className}`}
+      role="status"
       aria-label={`Severity: ${config.label}`}
     >
-      <SeverityIcon size={14} />
+      <SeverityIcon size={14} aria-hidden="true" />
       {config.label}
     </span>
   );
