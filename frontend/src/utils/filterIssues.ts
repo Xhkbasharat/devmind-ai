@@ -20,6 +20,14 @@ export interface IssueFilters {
   search: string;
 }
 
+function normalizeSeverity(severity?: string): string {
+  const normalized = severity?.toLowerCase().trim() || "info";
+
+  return normalized === "informational"
+    ? "info"
+    : normalized;
+}
+
 export function filterIssues<T extends FilterableIssue>(
   issues: T[],
   filters: IssueFilters
@@ -27,8 +35,7 @@ export function filterIssues<T extends FilterableIssue>(
   const searchTerm = filters.search.trim().toLowerCase();
 
   return issues.filter((issue) => {
-    const issueSeverity =
-      issue.severity?.toLowerCase().trim() || "info";
+    const issueSeverity = normalizeSeverity(issue.severity);
 
     const matchesSeverity =
       filters.severity === "all" ||
@@ -39,9 +46,11 @@ export function filterIssues<T extends FilterableIssue>(
       issue.severity,
       issue.message,
       issue.description,
-      issue.line?.toString(),
+      typeof issue.line === "number"
+        ? String(issue.line)
+        : "",
     ]
-      .filter(Boolean)
+      .filter((value) => value != null && value !== "")
       .join(" ")
       .toLowerCase();
 
