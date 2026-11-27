@@ -17,6 +17,7 @@ export function calculateQualityScore(
   code: string
 ): QualityScore {
   const lines = code.split("\n");
+
   const nonEmptyLines = lines.filter(
     (line) => line.trim().length > 0
   );
@@ -39,10 +40,6 @@ export function calculateQualityScore(
     (line) => line.length > 100
   ).length;
 
-  const longFunctions = (
-    code.match(/function\s+\w+|def\s+\w+|=>\s*\{/g) || []
-  ).length;
-
   const conditionalCount = (
     code.match(/\b(if|else|switch|case|elif)\b/g) || []
   ).length;
@@ -62,11 +59,16 @@ export function calculateQualityScore(
     longLines / Math.max(lineCount, 1);
 
   const complexityRatio =
-    (conditionalCount + loopCount) / Math.max(lineCount, 1);
+    (conditionalCount + loopCount) /
+    Math.max(lineCount, 1);
 
-  const readability = clamp(100 - longLineRatio * 180);
+  const readability = clamp(
+    100 - longLineRatio * 180
+  );
 
-  const complexity = clamp(100 - complexityRatio * 250);
+  const complexity = clamp(
+    100 - complexityRatio * 250
+  );
 
   const documentation = clamp(
     documentationRatio * 500
@@ -92,12 +94,15 @@ export function calculateQualityScore(
   else if (overall >= 70) grade = "C";
   else if (overall >= 60) grade = "D";
 
-  let summary = "The code has several opportunities for improvement.";
+  let summary =
+    "The code has several opportunities for improvement.";
 
   if (overall >= 85) {
-    summary = "The code has strong estimated quality indicators.";
+    summary =
+      "The code has strong estimated quality indicators.";
   } else if (overall >= 70) {
-    summary = "The code has a reasonable structure with room for improvement.";
+    summary =
+      "The code has a reasonable structure with room for improvement.";
   }
 
   return {
