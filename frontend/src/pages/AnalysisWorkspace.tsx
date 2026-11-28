@@ -282,6 +282,7 @@ export default function AnalysisWorkspace() {
                 issues={result.issues ?? []}
                 score={result.score}
                 summary={result.summary}
+                recommendations={recommendations}
               />
             </div>
 
