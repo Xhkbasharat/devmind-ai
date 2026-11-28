@@ -1,11 +1,13 @@
 
 import type { FilterableIssue } from "./filterIssues";
+import type { AnalysisRecommendation } from "./analysisRecommendations";
 
 interface AnalysisExportData {
   language: string;
   score?: number;
   summary?: string;
   issues: FilterableIssue[];
+  recommendations?: AnalysisRecommendation[];
 }
 
 function escapeCsvValue(value: unknown): string {
@@ -17,6 +19,7 @@ export function exportAnalysisReport(
   data: AnalysisExportData
 ): void {
   const headers = [
+    "Record Type",
     "Programming Language",
     "Overall Score",
     "Summary",
@@ -24,27 +27,57 @@ export function exportAnalysisReport(
     "Severity",
     "Description",
     "Line",
+    "Recommendation Priority",
+    "Suggested Action",
   ];
 
-  const rows = data.issues.length
-    ? data.issues.map((issue) => [
-        data.language,
-        data.score ?? "",
-        data.summary ?? "",
-        issue.type ?? "Finding",
-        issue.severity ?? "info",
-        issue.message ?? issue.description ?? "",
-        issue.line ?? "",
-      ])
-    : [[
-        data.language,
-        data.score ?? "",
-        data.summary ?? "",
-        "No findings",
-        "",
-        "",
-        "",
-      ]];
+  const issueRows = data.issues.map((issue) => [
+    "Finding",
+    data.language,
+    data.score ?? "",
+    data.summary ?? "",
+    issue.type ?? "Finding",
+    issue.severity ?? "info",
+    issue.message ?? issue.description ?? "",
+    issue.line ?? "",
+    "",
+    "",
+  ]);
+
+  const recommendationRows = (
+    data.recommendations ?? []
+  ).map((recommendation) => [
+    "Recommendation",
+    data.language,
+    data.score ?? "",
+    data.summary ?? "",
+    recommendation.title,
+    "",
+    recommendation.description,
+    "",
+    recommendation.priority,
+    recommendation.action,
+  ]);
+
+  const rows = [
+    ...issueRows,
+    ...recommendationRows,
+  ];
+
+  if (rows.length === 0) {
+    rows.push([
+      "Analysis",
+      data.language,
+      data.score ?? "",
+      data.summary ?? "",
+      "No findings",
+      "",
+      "",
+      "",
+      "",
+      "",
+    ]);
+  }
 
   const csv = [
     headers.map(escapeCsvValue).join(","),
