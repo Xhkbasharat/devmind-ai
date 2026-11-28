@@ -1,4 +1,6 @@
+
 import type { AnalysisRecommendation } from "../utils/analysisRecommendations";
+import "../styles/analysis-recommendations.css";
 
 interface AnalysisRecommendationsProps {
   recommendations: AnalysisRecommendation[];
@@ -24,8 +26,12 @@ export default function AnalysisRecommendations({
     >
       <div className="analysis-recommendations-header">
         <div>
-          <h2 id="recommendations-heading">Recommended Improvements</h2>
-          <p>Practical actions based on your analysis findings.</p>
+          <h2 id="recommendations-heading">
+            Recommended Improvements
+          </h2>
+          <p>
+            Practical actions based on your analysis findings.
+          </p>
         </div>
       </div>
 
