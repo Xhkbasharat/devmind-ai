@@ -19,6 +19,7 @@ import SeverityBadge from "../components/SeverityBadge";
 import AnalysisExportButton from "../components/AnalysisExportButton";
 import AnalysisHistory from "../components/AnalysisHistory";
 import AnalysisStatisticsCard from "../components/AnalysisStatisticsCard";
+import AnalysisRecommendations from "../components/AnalysisRecommendations";
 
 import aiService from "../services/ai";
 import { getErrorMessage } from "../services/error";
@@ -30,6 +31,7 @@ import { validateCodeInput } from "../utils/codeValidation";
 import { filterIssues } from "../utils/filterIssues";
 import type { SeverityFilter } from "../utils/filterIssues";
 import type { AnalysisHistoryItem } from "../hooks/useAnalysisHistory";
+import { generateAnalysisRecommendations } from "../utils/analysisRecommendations";
 
 interface AnalysisIssue {
   type?: string;
@@ -75,6 +77,10 @@ export default function AnalysisWorkspace() {
       severity: severityFilter,
       search: issueSearch,
     }
+  );
+
+  const recommendations = generateAnalysisRecommendations(
+    result?.issues ?? []
   );
 
   const handleAnalyze = async () => {
@@ -261,6 +267,10 @@ export default function AnalysisWorkspace() {
         <>
           <AnalysisStatisticsCard
             issues={result.issues ?? []}
+          />
+
+          <AnalysisRecommendations
+            recommendations={recommendations}
           />
 
           <section className="workspace-panel">
